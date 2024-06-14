@@ -6,15 +6,14 @@ const express = require("express");
 // const bedsRoutes = require("./beds.routes");
 
 function routes() {
+  const router = express.Router();
 
-    const router = express.Router();
-    
-    // router.use("/user", userRoutes);
-    // router.use("/patient", patientRoutes);
-    // router.use("/vitals", vitalsRoutes);
-    // router.use("/bed", bedsRoutes);
+  // router.use("/user", userRoutes);
+  // router.use("/patient", patientRoutes);
+  // router.use("/vitals", vitalsRoutes);
+  // router.use("/bed", bedsRoutes);
 
-    return router;
+  return router;
 }
 
 module.exports = routes();
