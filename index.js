@@ -1,12 +1,12 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const dotEnv = require("dotenv");
+// const dotEnv = require("dotenv")
 
-dotEnv.config();
+// dotEnv.config()
 
-const PORT = process.env.PORT || 4200;
-const HOST = process.env.HOST || "127.0.0.1";
+// const PORT = process.env.PORT || 4000;
+// const HOST = process.env.HOST || "10.10.92.143"
 app.use(express.json());
 app.use(cors());
 
@@ -17,38 +17,69 @@ const routes = require("./routes/index.routes");
 app.use("/", routes);
 
 //static Images Folder
-// app.use('/images', express.static('./images'))
+
+app.use("/Images", express.static("./Images"));
 
 // try {
+//     db.Users.belongsTo(db.Roles, { as: "roles", foreignKey: "roleId", onDelete: "cascade"});
+//     db.Roles.hasMany(db.Users, { as: "users", foreignKey: "roleId", onDelete: "cascade"});
+//     db.Tests.belongsTo(db.Users, {as: "user", foreignKey: "userId"});
+//     db.Users.hasMany(db.Tests, {as: "tests", foreignKey: "userId"});
+//     db.Agencies.belongsTo(db.Users, {as: "user", foreignKey: "userId"});
+//     db.Users.hasMany(db.Agencies, {as: "agencies", foreignKey: "userId"});
 
-//     db.Admissions.belongsTo(db.Patients, { as: "patients", foreignKey: "PatientId", onDelete: 'cascade'});
-//     db.Patients.hasMany(db.Admissions, { as: "admissions", foreignKey: "PatientId"});
-//     db.VitalSigns.belongsTo(db.Patients, { as: "patients", foreignKey: "PatientId"});
-//     db.Patients.hasMany(db.VitalSigns, { as: "vital_signs", foreignKey: "PatientId"});
-//     db.Users.belongsTo(db.UserRoles, { as: "roles", foreignKey: "roleId"});
-//     db.UserRoles.hasMany(db.Users, {as: "users", foreignKey: "roleId"});
-//     db.Admissions.belongsTo(db.Beds, {as: "bed", foreignKey: "bedId"});
-//     db.Beds.hasMany(db.Admissions, {as: "admissions", foreignKey: "bedId"});
+//     db.Customers.belongsTo(db.Agencies, {as: "agency", foreignKey: "agencyId"});
+//     db.Agencies.hasMany(db.Customers, {as: "customers", foreignKey: "agencyId"});
+//     db.Customers.belongsTo(db.Countries, {as: "country", foreignKey: "countryId"});
+//     db.Countries.hasMany(db.Customers, {as: "customers", foreignKey: "countryId"});
+//     db.Customers.belongsTo(db.Jobs, {as: "job", foreignKey: "jobId"});
+//     db.Jobs.hasMany(db.Customers, {as: "customers", foreignKey: "jobId"});
+//     db.DropdownData.belongsTo(db.Dropdowns, {as: "dropdown", foreignKey: "dropdownId", onDelete: "cascade"});
+//     db.Dropdowns.hasMany(db.DropdownData, {as: "dropdownData", foreignKey: "dropdownId", onDelete: "cascade"});
 
-//     db.Conditions.belongsTo(db.Patients, { as: "patients", foreignKey: "PatientId"});
-//     db.Patients.hasMany(db.Conditions, { as: "conditions", foreignKey: "PatientId"});
+//     db.Packages.belongsToMany(db.Tests, {through: "PackageTests", foreignKey: "pkgId", onDelete: "cascade"});
+//     db.Tests.belongsToMany(db.Packages, {through: "PackageTests", foreignKey: "testId", onDelete: "cascade"});
 
-//     db.CriticalAlerts.belongsTo(db.Patients, { as: "patients", foreignKey: "PatientId"});
-//     db.Patients.hasMany(db.CriticalAlerts, { as: "criticalAlerts", foreignKey: "PatientId"});
+//     db.Admissions.belongsTo(db.Customers, {as: "customer", foreignKey: "customerId", onDelete: "cascade"})
+//     db.Customers.hasMany(db.Admissions, {as: "admissions", foreignKey: "customerId", onDelete: "cascade"});
 
-//     db.BorderlineAlerts.belongsTo(db.Patients, { as: "patients", foreignKey: "PatientId"});
-//     db.Patients.hasMany(db.BorderlineAlerts, { as: "borderlineAlerts", foreignKey: "PatientId"});
+//     db.Admissions.belongsTo(db.DropdownData, {as: "bank", foreignKey: "bankId"});
+//     db.DropdownData.hasMany(db.Admissions, {as: "bank_admission", foreignKey: "bankId"});
+//     db.Admissions.belongsTo(db.DropdownData, {as: "creditAprover", foreignKey: "creditAproverId"});
+//     db.DropdownData.hasMany(db.Admissions, {as: "creditAprover_admission", foreignKey: "creditAproverId"});
+//     db.Admissions.belongsTo(db.DropdownData, {as: "miniLabStatus", foreignKey: "miniLabStatusId"});
+//     db.DropdownData.hasMany(db.Admissions, {as: "miniLabStatus_admission", foreignKey: "miniLabStatusId"});
+//     db.Admissions.belongsTo(db.DropdownData, {as: "labStatus", foreignKey: "labStatusId"});
+//     db.DropdownData.hasMany(db.Admissions, {as: "labStatus_admission", foreignKey: "labStatusId"});
+//     db.Admissions.belongsTo(db.DropdownData, {as: "xRayStatus", foreignKey: "xRayStatusId"});
+//     db.DropdownData.hasMany(db.Admissions, {as: "xRayStatus_admission", foreignKey: "xRayStatusId"});
+//     db.Admissions.belongsTo(db.DropdownData, {as: "paymentMethod", foreignKey: "paymentMethodId"});
+//     db.DropdownData.hasMany(db.Admissions, {as: "paymentMethod_admission", foreignKey: "paymentMethodId"})
+
+//     db.CustomerTests.belongsTo(db.Customers, {as: "customer", foreignKey: "customerId", onDelete: "cascade"});
+//     db.Customers.hasMany(db.CustomerTests, {as: "customerTests", foreignKey: "customerId", onDelete: "cascade"});
+//     db.CustomerTests.belongsTo(db.Tests, {as: "test", foreignKey: "testId", onDelete: "cascade"});
+//     db.Tests.hasMany(db.CustomerTests, {as: "customerTests", foreignKey: "testId", onDelete: "cascade"});
+
+//     db.CustomerTests.belongsTo(db.Packages, {as: "package", foreignKey: "packageId", onDelete: "cascade"});
+//     db.Packages.hasMany(db.CustomerTests, {as: "customerTests", foreignKey: "packageId", onDelete: "cascade"});
+
+//     db.CustomerTests.belongsTo(db.Admissions, {as: "admission", foreignKey: "admissionId", onDelete: "cascade"});
+//     db.Admissions.hasMany(db.CustomerTests, {as: "customerTests", foreignKey: "admissionId", onDelete: "cascade"});
+
+//     db.CustomerPackages.belongsTo(db.Admissions, {as:"admission", foreignKey:"admissionId", onDelete: "cascade"});
+//     db.Admissions.hasMany(db.CustomerPackages, {as: "customerPackages", foreignKey:"admissionId", onDelete: "cascade"})
+//     db.CustomerPackages.belongsTo(db.Customers, {as:"customer", foreignKey:"customerId", onDelete: "cascade"});
+//     db.Customers.hasMany(db.CustomerPackages, {as: "customerPackages", foreignKey:"customerId", onDelete: "cascade"})
+//     db.CustomerPackages.belongsTo(db.Packages, {as:"package", foreignKey:"packageId", onDelete: "cascade"});
+//     db.Packages.hasMany(db.CustomerPackages, {as: "customerPackages", foreignKey:"packageId", onDelete: "cascade"})
 
 // } catch (error) {
 //     console.log(error);
 // }
 
 db.sequelize.sync({ alter: true }).then(() => {
-  // app.listen(PORT, () => {
-  //     console.log("SERVER RUNNING ON PORT 4200");
-  // });
-
-  app.listen(PORT, HOST, () =>
-    console.log(`Server running on ${PORT}`)
-  );
+  app.listen(4002, () => {
+    console.log(`SERVER RUNNING ON PORT 4002`);
+  });
 });
