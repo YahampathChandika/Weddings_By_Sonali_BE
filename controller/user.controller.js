@@ -103,13 +103,144 @@ async function loginUser(req, res) {
     });
   }
 }
+
+//Get User Roles
+async function getUserRoles(req, res) {
+  try {
+    const result = await userService.getUserRoles();
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.log("Error Getting User Roles Controller", error);
+    return res.status(500).json({
+      error: true,
+      payload: error,
+    });
+  }
+}
+
+async function getAllUsers(req, res) {
+  try {
+    const userRole_id = req.user.roleId;
+
+    if (![1].includes(userRole_id)) {
+      return res.status(403).json({
+        error: true,
+        payload: "Unauthorized! Only Admins can view users.",
+      });
+    }
+
+    const result = await userService.getAllUsers();
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (err) {
+    console.log("Error Getting Users Controller: ", err);
+    return res.status(500).json({
+      error: true,
+      payload: err,
+    });
+  }
+}
+
+async function getUserById(req, res) {
+  try {
+    const userRole_id = req.user.roleId;
+    const { id } = req.params;
+
+    if (![1].includes(userRole_id)) {
+      return res.status(403).json({
+        error: true,
+        payload: "Unauthorized! Only Admins can view users.",
+      });
+    }
+
+    const result = await userService.getUserById(id);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.log("Error Getting Users Controller: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: error,
+    });
+  }
+}
+
+//Update User
+async function updateUser(req, res) {
+  try {
+    const userRole_id = req.user.roleId;
+    const { id } = req.params;
+    const userData = req.body;
+
+    delete userData.password;
+
+    if (![1].includes(userRole_id)) {
+      return res.status(403).json({
+        error: true,
+        payload: "Unauthorized! Only Admins can update users.",
+      });
+    }
+
+    const result = await userService.updateUser(id, userData);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.log("Error Updating User Controller: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: error,
+    });
+  }
+}
+
 module.exports = {
   registerUser,
   loginUser,
-  // getUserRoles,
-  // getAllUsers,
-  // getUserById,
+  getUserRoles,
+  getAllUsers,
+  getUserById,
   // getSignedUser,
-  // updateUser,
+  updateUser,
   // deleteUser
 };
