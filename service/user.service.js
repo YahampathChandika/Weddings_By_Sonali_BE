@@ -207,6 +207,32 @@ async function updateUser(id, userData) {
   }
 }
 
+//Delete User
+
+async function deleteUser(id) {
+  try {
+    const user = await Users.findByPk(id);
+
+    if (!user) {
+      return {
+        error: true,
+        status: 404,
+        payload: "User Doesn't Exist!",
+      };
+    } else {
+      await user.destroy();
+      return {
+        error: false,
+        status: 200,
+        payload: "User Successfully Deleted!",
+      };
+    }
+  } catch (error) {
+    console.error("Error Deleting User Service : ", error);
+    throw error;
+  }
+}
+
 module.exports = {
   registerUser,
   loginUser,
@@ -214,5 +240,5 @@ module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
-  // deleteUser
+  deleteUser,
 };
