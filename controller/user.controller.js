@@ -107,6 +107,7 @@ async function loginUser(req, res) {
 //Get User Roles
 async function getUserRoles(req, res) {
   try {
+    console.log("Getting")
     const result = await userService.getUserRoles();
 
     if (result.error) {

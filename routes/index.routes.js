@@ -10,7 +10,7 @@ function routes() {
   const router = express.Router();
 
   router.use("/user", userRoutes);
-  router.use("/items", itemRoutes);
+  router.use("/item", itemRoutes);
   // router.use("/patient", patientRoutes);
   // router.use("/vitals", vitalsRoutes);
   // router.use("/bed", bedsRoutes);
@@ -18,4 +18,4 @@ function routes() {
   return router;
 }
 
-module.exports = routes;
+module.exports = routes();

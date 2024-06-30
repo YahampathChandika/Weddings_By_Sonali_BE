@@ -2,23 +2,23 @@ module.exports = (sequelize, DataTypes) => {
   const Items = sequelize.define("Items", {
     itemName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     quantity: {
-      type: DataTypes.DOUBLE,
-      allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     usedTimes: {
-      type: DataTypes.DOUBLE,
-      allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     demage: {
-      type: DataTypes.DOUBLE,
-      allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     missing: {
-      type: DataTypes.DOUBLE,
-      allowNull: false,
+      type: DataTypes.STRING,
+      allowNull: true,
     }
   });
   return Items;

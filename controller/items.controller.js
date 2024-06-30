@@ -2,16 +2,16 @@ const itemsService = require("../service/items.service");
 
 async function createItems(req, res) {
   try {
-    // const userRole_id = req.user.roleId;  // Ensure req.user is populated correctly
-    // const items = req.body;
-    // items.userId = req.user.id;
+    const userRole_id = req.user.roleId;
+    const items = req.body;
+    items.userId = req.user.id;
 
-    // if (![1].includes(userRole_id)) {
-    //   return res.status(403).json({
-    //     error: true,
-    //     payload: "Unauthorized. Only Admins can create agencies.",
-    //   });
-    // }
+    if (![1].includes(userRole_id)) {
+      return res.status(403).json({
+        error: true,
+        payload: "Unauthorized. Only Admins can create agencies.",
+      });
+    }
 
     const result = await itemsService.createItem(items);
 
