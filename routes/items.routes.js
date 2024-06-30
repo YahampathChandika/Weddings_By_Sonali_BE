@@ -4,7 +4,7 @@ const itemsController = require("../controller/items.controller");
 function getItemsRoutes() {
   const router = express.Router();
 
-  router.post("/createitems", itemsController.createItems);
+  router.post("/createItem", itemsController.createItems);
 
   return router;
 }
