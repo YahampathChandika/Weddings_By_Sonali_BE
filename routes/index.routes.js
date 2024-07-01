@@ -11,9 +11,6 @@ function routes() {
   router.use("/item", itemRoutes);
   router.use("/customer", customerRoutes);
   router.use("/itemUsage", itemUsageRoutes);
-  // router.use("/patient", patientRoutes);
-  // router.use("/vitals", vitalsRoutes);
-  // router.use("/bed", bedsRoutes);
 
   return router;
 }
