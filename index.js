@@ -23,6 +23,9 @@ app.use("/Images", express.static("./Images"));
 try {
   db.Users.belongsTo(db.Roles, { as: "roles", foreignKey: "roleId", onDelete: "cascade"});
   db.Roles.hasMany(db.Users, { as: "users", foreignKey: "roleId", onDelete: "cascade"})
+
+  db.Events.belongsTo(db.Customers, { as: "customers", foreignKey: "customerId", onDelete: "cascade"});
+  db.Customers.hasMany(db.Events, { as: "events", foreignKey: "customerId", onDelete: "cascade"})
     
 } catch (error) {
     console.log(error);
