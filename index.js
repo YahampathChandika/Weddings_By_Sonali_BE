@@ -1,12 +1,6 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-// const dotEnv = require("dotenv")
-
-// dotEnv.config()
-
-// const PORT = process.env.PORT || 4000;
-// const HOST = process.env.HOST || "10.10.92.143"
 app.use(express.json());
 app.use(cors());
 
@@ -27,7 +21,9 @@ try {
   db.ItemsUsage.belongsTo(db.Items, { as: "items", foreignKey: "itemID"});
   db.Items.hasMany(db.ItemsUsage, { as: "itemsUsage", foreignKey: "itemID"});
 
-    
+  db.Events.belongsTo(db.Customers, { as: "customers", foreignKey: "customerId", onDelete: "cascade"});
+  db.Customers.hasMany(db.Events, { as: "events", foreignKey: "customerId", onDelete: "cascade"})
+
 } catch (error) {
     console.log(error);
 }
