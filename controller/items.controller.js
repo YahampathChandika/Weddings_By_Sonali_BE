@@ -73,9 +73,9 @@ async function getItemsById(req, res) {
       const userRole_id = req.user.roleId;
       const { id } = req.params;
 
-      if (![1].includes(userRole_id)) {
-          return res.status(403).json({ error: true, payload: "Unauthorized. Only Admins can view details of an Items."});
-      }
+      // if (![1].includes(userRole_id)) {
+      //     return res.status(403).json({ error: true, payload: "Unauthorized. Only Admins can view details of an Items."});
+      // }
 
       const result = await itemsService.getItemById(id);
 
