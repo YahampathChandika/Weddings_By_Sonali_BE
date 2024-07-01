@@ -1,5 +1,6 @@
 const { Items } = require("../models");
 
+// Create New Item
 async function createItem(item) {
   try {
     const itemExist = await Items.findOne({
@@ -34,6 +35,116 @@ async function createItem(item) {
   }
 }
 
+// Get All Items
+async function getAllItems() {
+  try {
+    const country = await Items.findAll();
+
+    if (!country) {
+      return {
+        error: true,
+        status: 404,
+        payload: "No country data available!",
+      };
+    } else {
+      return {
+        error: false,
+        status: 200,
+        payload: country,
+      };
+    }
+  } catch (error) {
+    console.error("Error getting Country service :", error);
+    throw error;
+  }
+}
+
+//Get Item By Id
+async function getItemById(id) {
+  try {
+    const Item = await Items.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!Item) {
+      return {
+        error: true,
+        status: 404,
+        payload: "No Item date Available!",
+      };
+    } else {
+      return {
+        error: false,
+        status: 200,
+        payload: Item,
+      };
+    }
+  } catch (error) {
+    console.error("Error getting Item by ID service :", error);
+    throw error;
+  }
+}
+
+//Delete an Items
+async function deleteItems(id) {
+  try {
+    const items = await Items.findByPk(id);
+
+    if (!items) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Items not found!",
+      };
+    } else {
+      await items.destroy();
+      return {
+        error: false,
+        status: 200,
+        payload: "Items successfully deleted!",
+      };
+    }
+  } catch (error) {
+    console.error("Error deleteing Items service: ", error);
+    throw error;
+  }
+}
+
+// Update Items
+async function updateItems(id, updatedData) {
+  try {
+      const items = await Items.findByPk(id);
+
+      if (!items) {
+          return {
+              error: true,
+              status: 404,
+              payload: "Items not found!"
+          };
+      } else {
+          await Items.update(updatedData, {
+              where: { id: id }
+          });
+
+          return {
+              error: false,
+              status: 200,
+              payload: "Items updated successfully!"
+          };
+      }
+  } catch (error) {
+      console.error('Error Updating Items Service : ', error);
+      throw error;
+  }
+}
+
+
 module.exports = {
   createItem,
+  getAllItems,
+  getItemById,
+  deleteItems,
+  updateItems
 };
