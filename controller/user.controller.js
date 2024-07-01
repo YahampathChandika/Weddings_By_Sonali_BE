@@ -6,7 +6,7 @@ const { sign } = require("jsonwebtoken");
 
 async function registerUser(req, res) {
   try {
-    const userRole_id = req.body.roleId;
+    const userRole_id = req.user.roleId;
     const { name, email, contactNo, address, username, password, roleId } =
       req.body;
 
