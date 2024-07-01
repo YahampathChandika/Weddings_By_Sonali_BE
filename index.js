@@ -22,7 +22,11 @@ app.use("/Images", express.static("./Images"));
 
 try {
   db.Users.belongsTo(db.Roles, { as: "roles", foreignKey: "roleId", onDelete: "cascade"});
-  db.Roles.hasMany(db.Users, { as: "users", foreignKey: "roleId", onDelete: "cascade"})
+  db.Roles.hasMany(db.Users, { as: "users", foreignKey: "roleId", onDelete: "cascade"});
+  
+  db.ItemsUsage.belongsTo(db.Items, { as: "items", foreignKey: "itemID"});
+  db.Items.hasMany(db.ItemsUsage, { as: "itemsUsage", foreignKey: "itemID"});
+
     
 } catch (error) {
     console.log(error);
