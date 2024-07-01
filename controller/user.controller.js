@@ -163,6 +163,7 @@ async function getAllUsers(req, res) {
   }
 }
 
+//get user by id
 async function getUserById(req, res) {
   try {
     const userRole_id = req.user.roleId;

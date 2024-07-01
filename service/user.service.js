@@ -65,7 +65,7 @@ async function registerUser(
       payload: "User Successfully Created",
     };
   } catch (error) {
-    console.log("Error creating User Service : ", error);
+    console.error("Error creating User Service : ", error);
     throw error;
   }
 }

@@ -17,4 +17,4 @@ function getCustomerRoutes() {
     return router;
 }
 
-module.exports = getUserRoutes();
+module.exports = getCustomerRoutes();
