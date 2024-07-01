@@ -8,11 +8,11 @@ function itemUsageRoutes() {
   router.use(express.json());
   router.use(authMiddleware);
 
-  router.post("/createItemsUsage", createItemsUsageController.createItemsUsage);
-//   router.get("/getAllItems", itemsController.getAllItems);
-//   router.get("/getItemsById/:id", itemsController.getItemsById);
-//   router.delete("/deleteItem/:id", itemsController.deleteItems);
-//   router.patch("/updateItem/:id", itemsController.updateItem);
+  router.post("/createUsageItems", createItemsUsageController.createItemsUsage);
+  router.get("/getAllUsedItems", createItemsUsageController.getAllUsedItems);
+//   router.get("/getItemsById/:id", createItemsUsageController.getItemsById);
+//   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
+//   router.patch("/updateItem/:id", createItemsUsageController.updateItem);
 
   return router;
 }

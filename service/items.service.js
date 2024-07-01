@@ -38,23 +38,23 @@ async function createItem(item) {
 // Get All Items
 async function getAllItems() {
   try {
-    const country = await Items.findAll();
+    const items = await Items.findAll();
 
-    if (!country) {
+    if (!items) {
       return {
         error: true,
         status: 404,
-        payload: "No country data available!",
+        payload: "No items data available!",
       };
     } else {
       return {
         error: false,
         status: 200,
-        payload: country,
+        payload: items,
       };
     }
   } catch (error) {
-    console.error("Error getting Country service :", error);
+    console.error("Error getting items service :", error);
     throw error;
   }
 }
