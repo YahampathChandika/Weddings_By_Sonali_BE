@@ -19,7 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     missing: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    availableunits: {
+      type: DataTypes.STRING,
+      allowNull: true,
     }
+
   });
   return Items;
 };

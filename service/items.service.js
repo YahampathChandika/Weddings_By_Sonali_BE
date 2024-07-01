@@ -1,4 +1,4 @@
-const { Items } = require("../models");
+const { Items, ItemsUsage } = require("../models");
 
 // Create New Item
 async function createItem(item) {
@@ -17,6 +17,7 @@ async function createItem(item) {
       };
     }
 
+    item.availableunits = item.quantity;
     const newItem = await Items.create(item);
 
     return {
@@ -40,22 +41,38 @@ async function getAllItems() {
   try {
     const items = await Items.findAll();
 
-    if (!items) {
-      return {
-        error: true,
-        status: 404,
-        payload: "No items data available!",
-      };
-    } else {
-      return {
-        error: false,
-        status: 200,
-        payload: items,
-      };
-    }
+    const itemsUsage = await ItemsUsage.findAll();
+
+    const usedQuantitiesMap = {};
+    itemsUsage.forEach((usage) => {
+      const itemId = usage.itemID;
+      const usedQuantity = parseInt(usage.quantity) || 0;
+      if (usedQuantitiesMap[itemId]) {
+        usedQuantitiesMap[itemId] += usedQuantity;
+      } else {
+        usedQuantitiesMap[itemId] = usedQuantity;
+      }
+    });
+
+    items.forEach((item) => {
+      const itemId = item.id;
+      const totalUsedQuantity = usedQuantitiesMap[itemId] || 0;
+      item.availableunits = (parseInt(item.quantity) || 0) - totalUsedQuantity;
+    });
+
+    return {
+      error: false,
+      status: 200,
+      payload: items,
+    };
   } catch (error) {
-    console.error("Error getting items service :", error);
-    throw error;
+    console.error("Error getting items service:", error);
+
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
   }
 }
 
@@ -115,36 +132,39 @@ async function deleteItems(id) {
 // Update Items
 async function updateItems(id, updatedData) {
   try {
-      const items = await Items.findByPk(id);
+    const items = await Items.findByPk(id);
 
-      if (!items) {
-          return {
-              error: true,
-              status: 404,
-              payload: "Items not found!"
-          };
-      } else {
-          await Items.update(updatedData, {
-              where: { id: id }
-          });
-
-          return {
-              error: false,
-              status: 200,
-              payload: "Items updated successfully!"
-          };
+    if (!items) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Items not found!",
+      };
+    } else {
+      if (updatedData.quantity) {
+        updatedData.availableunits = updatedData.quantity;
       }
+
+      await Items.update(updatedData, {
+        where: { id: id },
+      });
+
+      return {
+        error: false,
+        status: 200,
+        payload: "Items updated successfully!",
+      };
+    }
   } catch (error) {
-      console.error('Error Updating Items Service : ', error);
-      throw error;
+    console.error("Error Updating Items Service : ", error);
+    throw error;
   }
 }
-
 
 module.exports = {
   createItem,
   getAllItems,
   getItemById,
   deleteItems,
-  updateItems
+  updateItems,
 };
