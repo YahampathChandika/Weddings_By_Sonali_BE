@@ -18,6 +18,8 @@ async function createNewOrder(orderDetails) {
             returnDate,
             itemTakeDate,
             state,
+            customerId: createdCustomer.id 
+
         });
 
         return {
@@ -37,6 +39,34 @@ async function createNewOrder(orderDetails) {
     }
 }
 
+async function getAllOrders() {
+    try {
+        const customerDetails = await Customers.findAll({
+            include: [
+                {
+                    model: Events,
+                    as: 'events'
+                }
+            ]
+        });
+
+        return {
+            error: false,
+            status: 200,
+            payload: customerDetails,
+        };
+    } catch (error) {
+        console.error(error);
+
+        return {
+            error: true,
+            status: 500,
+            payload: "An error occurred while fetching the orders.",
+        };
+    }
+}
+
 module.exports = {
     createNewOrder,
+    getAllOrders,
 };
