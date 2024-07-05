@@ -9,10 +9,10 @@ function getEventRoutes() {
     router.use(authMiddleware);
 
     router.post("/addEvent", eventController.registerEvent);
-    router.get("/getAllEvents", eventController.getAllEvents);
-    router.get("/getEventById/:id", eventController.getEventById);
-    router.patch("/updateEvent/:id", eventController.updateEvent);
-    router.delete("/deleteEvent/:id", eventController.deleteEvent);
+    // router.get("/getAllEvents", eventController.getAllEvents);
+    // router.get("/getEventById/:id", eventController.getEventById);
+    // router.patch("/updateEvent/:id", eventController.updateEvent);
+    // router.delete("/deleteEvent/:id", eventController.deleteEvent);
 
     return router;
 }

@@ -20,6 +20,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    code: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    type: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     availableunits: {
       type: DataTypes.STRING,
       allowNull: true,

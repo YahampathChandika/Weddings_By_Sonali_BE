@@ -24,6 +24,9 @@ try {
   db.Events.belongsTo(db.Customers, { as: "customers", foreignKey: "customerId", onDelete: "cascade"});
   db.Customers.hasMany(db.Events, { as: "events", foreignKey: "customerId", onDelete: "cascade"})
 
+  db.ItemsUsage.belongsTo(db.Events, { as: "events", foreignKey: "eventID"});
+  db.Events.hasMany(db.ItemsUsage, { as: "itemsUsage", foreignKey: "eventID"});
+
 } catch (error) {
     console.log(error);
 }

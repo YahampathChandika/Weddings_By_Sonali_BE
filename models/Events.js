@@ -1,17 +1,38 @@
 module.exports = (sequelize, DataTypes) => {
   const Events = sequelize.define("Events", {
-    name: {
+    eventName: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
-    address: {
+    eventDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    pax: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
-    date: {
+    venue: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
+    eventTime: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    returnDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    itemTakeDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    
   });
   return Events;
 };
