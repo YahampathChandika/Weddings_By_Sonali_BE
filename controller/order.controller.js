@@ -26,7 +26,7 @@ async function createOrder(req, res) {
   }
 }
 
-async function fetchAllOrders(req, res) {
+async function getAllOrders(req, res) {
   try {
     const result = await orderService.getAllOrders();
 
@@ -52,5 +52,5 @@ async function fetchAllOrders(req, res) {
 
 module.exports = {
   createOrder,
-  fetchAllOrders,
+  getAllOrders,
 };
