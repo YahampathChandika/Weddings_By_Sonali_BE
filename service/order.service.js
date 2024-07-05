@@ -17,7 +17,7 @@ async function createNewOrder(orderDetails) {
             eventTime,
             returnDate,
             itemTakeDate,
-            state,
+            state: '1' ,
             customerId: createdCustomer.id 
 
         });
@@ -25,7 +25,7 @@ async function createNewOrder(orderDetails) {
         return {
             error: false,
             status: 200,
-            payload: "Customer and Event Order created!",
+            payload: "Order successfully created!!",
         };
 
     } catch (e) {
@@ -41,7 +41,7 @@ async function createNewOrder(orderDetails) {
 
 async function getAllOrders() {
     try {
-        const customerDetails = await Customers.findAll({
+        const customers = await Customers.findAll({
             include: [
                 {
                     model: Events,
@@ -50,10 +50,31 @@ async function getAllOrders() {
             ]
         });
 
+        // Prepare the result object
+        // const orders = customers.map(customer => {
+        //     return {
+        //         customerId: customer.id,
+        //         name: customer.name,
+        //         email: customer.email,
+        //         contactNo: customer.contactNo,
+        //         address: customer.address,
+        //         events: customer.events.map(event => ({
+        //             eventName: event.name,
+        //             eventDate: event.date,
+        //             pax: event.pax,
+        //             venue: event.venue,
+        //             eventTime: event.time,
+        //             returnDate: event.returnDate,
+        //             itemTakeDate: event.itemTakeDate,
+        //             state: event.state
+        //         }))
+        //     };
+        // });
+
         return {
             error: false,
             status: 200,
-            payload: customerDetails,
+            payload: customers,
         };
     } catch (error) {
         console.error(error);
@@ -65,6 +86,7 @@ async function getAllOrders() {
         };
     }
 }
+
 
 module.exports = {
     createNewOrder,
