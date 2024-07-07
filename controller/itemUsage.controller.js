@@ -70,7 +70,6 @@ async function getAllSelectItems(req, res) {
   }
 }
 
-// itemUsage.controller.js
 async function getSelectItemUsageById(req, res) {
   try {
     const { id } = req.params;
@@ -96,8 +95,36 @@ async function getSelectItemUsageById(req, res) {
   }
 }
 
+async function deleteSelectItem(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await itemsUsageService.deleteSelectItem(id);
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.log("Error Deleting Select Items: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: error,
+    });
+  }
+}
+
+
+
 module.exports = {
   createItemsUsage,
   getAllSelectItems,
   getSelectItemUsageById,
+  deleteSelectItem,
+  
 };

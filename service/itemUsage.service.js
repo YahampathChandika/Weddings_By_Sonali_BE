@@ -166,9 +166,52 @@ async function getSelectItemById(id) {
   }
 }
 
+async function deleteSelectItem(id) {
+  try {
+    const selectItems = await ItemsUsage.findByPk(id);
+    if (!selectItems) {
+      return {
+        error: true,
+        status: 404,
+        payload: "ItemsUsage not found!",
+      };
+    } else {
+      const item = await Items.findByPk(selectItems.itemID);
+      if (!item) {
+        return {
+          error: true,
+          status: 404,
+          payload: "Item not found!",
+        };
+      }
+
+      item.availableunits = (parseInt(item.availableunits) || 0) + (parseInt(selectItems.quantity) || 0);
+      await item.save();
+
+      await selectItems.destroy();
+
+      return {
+        error: false,
+        status: 200,
+        payload: "ItemsUsage successfully deleted!",
+      };
+    }
+  } catch (error) {
+    console.error("Error deleting ItemsUsage service: ", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
+
+
+
 
 module.exports = {
   createUsageItems,
   getAllSelectItems,
   getSelectItemById,
+  deleteSelectItem,
 };

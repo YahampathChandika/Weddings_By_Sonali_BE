@@ -132,17 +132,34 @@ async function deleteItems(id) {
 // Update Items
 async function updateItems(id, updatedData) {
   try {
-    const items = await Items.findByPk(id);
+    const item = await Items.findByPk(id);
 
-    if (!items) {
+    if (!item) {
       return {
         error: true,
         status: 404,
-        payload: "Items not found!",
+        payload: "Item not found!",
       };
     } else {
       if (updatedData.quantity) {
-        updatedData.availableunits = updatedData.quantity;
+        const itemsUsage = await ItemsUsage.findAll({
+          where: {
+            itemID: id,
+          },
+        });
+
+        const usedQuantitiesMap = {};
+        itemsUsage.forEach((usage) => {
+          const usedQuantity = parseInt(usage.quantity) || 0;
+          if (usedQuantitiesMap[id]) {
+            usedQuantitiesMap[id] += usedQuantity;
+          } else {
+            usedQuantitiesMap[id] = usedQuantity;
+          }
+        });
+
+        const totalUsedQuantity = usedQuantitiesMap[id] || 0;
+        updatedData.availableunits = (parseInt(updatedData.quantity) || 0) - totalUsedQuantity;
       }
 
       await Items.update(updatedData, {
@@ -152,12 +169,16 @@ async function updateItems(id, updatedData) {
       return {
         error: false,
         status: 200,
-        payload: "Items updated successfully!",
+        payload: "Item updated successfully!",
       };
     }
   } catch (error) {
-    console.error("Error Updating Items Service : ", error);
-    throw error;
+    console.error("Error updating Item service:", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
   }
 }
 

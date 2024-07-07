@@ -126,7 +126,7 @@ async function deleteItems(req, res) {
 
 
     } catch (error) {
-        console.log("Error Deleting Items Controller: ", error);
+        console.log("Error Deleting Items : ", error);
         return res.status(500).json({
         error: true,
         payload: error
