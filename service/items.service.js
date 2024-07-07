@@ -105,27 +105,35 @@ async function getItemById(id) {
 }
 
 //Delete an Items
+// Delete an Item
 async function deleteItems(id) {
   try {
-    const items = await Items.findByPk(id);
+    const item = await Items.findByPk(id);
 
-    if (!items) {
+    if (!item) {
       return {
         error: true,
         status: 404,
-        payload: "Items not found!",
+        payload: "Item not found!",
       };
     } else {
-      await items.destroy();
+      await ItemsUsage.destroy({
+        where: { itemID: id }
+      });
+      await item.destroy();
       return {
         error: false,
         status: 200,
-        payload: "Items successfully deleted!",
+        payload: "Item and associated usages successfully deleted!",
       };
     }
   } catch (error) {
-    console.error("Error deleteing Items service: ", error);
-    throw error;
+    console.error("Error deleting Item service: ", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
   }
 }
 
