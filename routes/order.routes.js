@@ -10,7 +10,7 @@ function orderRoutes() {
 
   router.post("/crateOrder", orderController.createOrder);
   router.get("/getAllOrders", orderController.getAllOrders);
-//   router.get("/getItemsById/:id", createItemsUsageController.getItemsById);
+  router.get("/getOrderById/:id", orderController.getOrderById);
 //   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
 //   router.patch("/updateItem/:id", createItemsUsageController.updateItem);
 

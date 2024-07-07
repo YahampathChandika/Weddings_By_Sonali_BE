@@ -50,7 +50,34 @@ async function getAllOrders(req, res) {
   }
 }
 
+async function getOrderById(req, res) {
+  try {
+    const { id } = req.params;
+
+    const result = await orderService.getOrderById(id);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    }
+
+    return res.status(result.status).json({
+      error: false,
+      payload: result.payload,
+    });
+  } catch (error) {
+    console.log("Error getting order: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: error.message,
+    });
+  }
+}
+
 module.exports = {
   createOrder,
   getAllOrders,
+  getOrderById,
 };
