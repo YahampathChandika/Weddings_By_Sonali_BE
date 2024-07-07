@@ -12,7 +12,7 @@ function itemUsageRoutes() {
   router.get("/getAllSelectItems", createItemsUsageController.getAllSelectItems);
   router.get("/getSelectItemsById/:id", createItemsUsageController.getSelectItemUsageById);
   router.delete("/deleteSelectItem/:id", createItemsUsageController.deleteSelectItem);
-  // router.patch("/updateSelectItem/:id", createItemsUsageController.updateSelectItem);
+  router.patch("/updateSelectItem/:id", createItemsUsageController.updateSelctItem);
 
   return router;
 }

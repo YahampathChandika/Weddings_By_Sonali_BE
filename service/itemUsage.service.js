@@ -1,6 +1,4 @@
-const { where } = require("sequelize");
 const { ItemsUsage, Items, Events, Customers } = require("../models");
-const itemUsage = require("../models/itemUsage");
 
 // Create New ItemsUsage for multiple items
 async function createUsageItems(itemsUsageDataArray) {
@@ -206,6 +204,58 @@ async function deleteSelectItem(id) {
   }
 }
 
+async function updateSelctItem(id, updateData) {
+  try {
+    const updateSelectItem = await ItemsUsage.findByPk(id);
+
+    if (!updateSelectItem) {
+      return {
+        error: true,
+        status: 404,
+        payload: "ItemUsage not found!",
+      };
+    }
+
+    const item = await Items.findByPk(updateSelectItem.itemID);
+    if (!item) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Item not found!",
+      };
+    }
+
+    const oldQuantity = parseInt(updateSelectItem.quantity) || 0;
+    const newQuantity = parseInt(updateData.quantity) || 0;
+
+    // Adjust the available units for the item
+    item.availableunits = (parseInt(item.availableunits) || 0) + oldQuantity - newQuantity;
+
+    if (item.availableunits < 0) {
+      return {
+        error: true,
+        status: 400,
+        payload: "Insufficient available units for item.",
+      };
+    }
+
+    await item.save();
+    await updateSelectItem.update(updateData);
+
+    return {
+      error: false,
+      status: 200,
+      payload: "ItemUsage successfully updated!",
+    };
+  } catch (error) {
+    console.error("Error updating ItemUsage:", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
 
 
 
@@ -214,4 +264,5 @@ module.exports = {
   getAllSelectItems,
   getSelectItemById,
   deleteSelectItem,
+  updateSelctItem
 };
