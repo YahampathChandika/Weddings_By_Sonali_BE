@@ -70,7 +70,34 @@ async function getAllSelectItems(req, res) {
   }
 }
 
+// itemUsage.controller.js
+async function getSelectItemUsageById(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await itemsUsageService.getSelectItemById(id);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    }
+
+    return res.status(result.status).json({
+      error: false,
+      payload: result.payload,
+    });
+  } catch (error) {
+    console.error("Error retrieving ItemUsage by ID:", error);
+    return res.status(500).json({
+      error: true,
+      payload: "Internal server error",
+    });
+  }
+}
+
 module.exports = {
   createItemsUsage,
   getAllSelectItems,
+  getSelectItemUsageById,
 };

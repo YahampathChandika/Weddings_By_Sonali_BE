@@ -1,4 +1,6 @@
+const { where } = require("sequelize");
 const { ItemsUsage, Items, Events, Customers } = require("../models");
+const itemUsage = require("../models/itemUsage");
 
 // Create New ItemsUsage for multiple items
 async function createUsageItems(itemsUsageDataArray) {
@@ -128,7 +130,45 @@ async function getAllSelectItems() {
   }
 }
 
+// itemsUsage.service.js
+async function getSelectItemById(id) {
+  try {
+    const itemUsage = await ItemsUsage.findOne({
+      where: { id },
+      include: [
+        {
+          model: Items,
+          as: 'items',
+        }  
+      ],
+    });
+
+    if (!itemUsage) {
+      return {
+        error: true,
+        status: 404,
+        payload: "ItemUsage not found",
+      };
+    }
+
+    return {
+      error: false,
+      status: 200,
+      payload: itemUsage,
+    };
+  } catch (error) {
+    console.error("Error retrieving ItemUsage:", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error",
+    };
+  }
+}
+
+
 module.exports = {
   createUsageItems,
   getAllSelectItems,
+  getSelectItemById,
 };

@@ -10,7 +10,7 @@ function itemUsageRoutes() {
 
   router.post("/createUsageItems", createItemsUsageController.createItemsUsage);
   router.get("/getAllSelectItems", createItemsUsageController.getAllSelectItems);
-//   router.get("/getItemsById/:id", createItemsUsageController.getItemsById);
+  router.get("/getSelectItemsById/:id", createItemsUsageController.getSelectItemUsageById);
 //   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
 //   router.patch("/updateItem/:id", createItemsUsageController.updateItem);
 
