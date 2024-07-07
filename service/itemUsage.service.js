@@ -97,7 +97,7 @@ async function createUsageItems(itemsUsageDataArray) {
   }
 }
 
-async function getAllUsedItems() {
+async function getAllSelectItems() {
   try {
     const items = await Events.findAll({
       include: [
@@ -130,5 +130,5 @@ async function getAllUsedItems() {
 
 module.exports = {
   createUsageItems,
-  getAllUsedItems,
+  getAllSelectItems,
 };

@@ -9,7 +9,7 @@ function itemUsageRoutes() {
   router.use(authMiddleware);
 
   router.post("/createUsageItems", createItemsUsageController.createItemsUsage);
-  router.get("/getAllUsedItems", createItemsUsageController.getAllUsedItems);
+  router.get("/getAllSelectItems", createItemsUsageController.getAllSelectItems);
 //   router.get("/getItemsById/:id", createItemsUsageController.getItemsById);
 //   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
 //   router.patch("/updateItem/:id", createItemsUsageController.updateItem);

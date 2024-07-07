@@ -46,9 +46,9 @@ async function createItemsUsage(req, res) {
   }
 }
 
-async function getAllUsedItems(req, res) {
+async function getAllSelectItems(req, res) {
   try {
-    const result = await itemsUsageService.getAllUsedItems();
+    const result = await itemsUsageService.getAllSelectItems();
 
     if (result.error) {
       return res.status(result.status).json({
@@ -72,5 +72,5 @@ async function getAllUsedItems(req, res) {
 
 module.exports = {
   createItemsUsage,
-  getAllUsedItems,
+  getAllSelectItems,
 };
