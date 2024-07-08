@@ -4,27 +4,35 @@ const itemsUsageService = require("../service/itemUsage.service");
 async function createItemsUsage(req, res) {
   try {
     const userRole_id = req.user.roleId;
-    const itemsUsage = req.body;
+    const { eventID, items } = req.body;
     const userId = req.user.id;
 
-    if (!Array.isArray(itemsUsage)) {
+    if (!eventID) {
       return res.status(400).json({
         error: true,
-        payload: "Request body should be an array of items usage data.",
+        payload: "eventID is required.",
       });
     }
 
-    for (const itemUsage of itemsUsage) {
-      if (!itemUsage.itemID) {
+    if (!Array.isArray(items)) {
+      return res.status(400).json({
+        error: true,
+        payload: "items should be an array of items usage data.",
+      });
+    }
+
+    for (const item of items) {
+      if (!item.itemID) {
         return res.status(400).json({
           error: true,
           payload: "itemID is required for all items.",
         });
       }
-      itemUsage.userId = userId;
+      item.userId = userId;
+      item.eventID = eventID; // Add eventID to each item
     }
 
-    const result = await itemsUsageService.createUsageItems(itemsUsage);
+    const result = await itemsUsageService.createUsageItems({ eventID, items });
 
     if (result.error) {
       return res.status(result.status).json({

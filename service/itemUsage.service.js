@@ -1,11 +1,9 @@
 const { ItemsUsage, Items, Events, Customers } = require("../models");
 
-async function createUsageItems(itemsUsageDataArray) {
+async function createUsageItems(data) {
   try {
-    // Assuming all itemsUsageDataArray elements have the same eventID
-    const eventID = itemsUsageDataArray[0].eventID;
+    const { eventID, items } = data;
     
-    // Check if event exists before starting the transaction
     const event = await Events.findByPk(eventID);
     if (!event) {
       return {
@@ -18,26 +16,26 @@ async function createUsageItems(itemsUsageDataArray) {
     const transaction = await ItemsUsage.sequelize.transaction();
 
     try {
-      for (let itemsUsageData of itemsUsageDataArray) {
+      for (let itemData of items) {
         let existingUsage = await ItemsUsage.findOne({
           where: {
-            eventID: itemsUsageData.eventID,
-            itemID: itemsUsageData.itemID
+            eventID: eventID,
+            itemID: itemData.itemID
           },
           transaction
         });
 
-        const item = await Items.findByPk(itemsUsageData.itemID, { transaction });
+        const item = await Items.findByPk(itemData.itemID, { transaction });
         if (!item) {
           await transaction.rollback();
           return {
             error: true,
             status: 404,
-            payload: `Item with ID ${itemsUsageData.itemID} not found.`,
+            payload: `Item with ID ${itemData.itemID} not found.`,
           };
         }
 
-        const newQuantity = parseInt(itemsUsageData.quantity) || 0;
+        const newQuantity = parseInt(itemData.quantity) || 0;
 
         if (existingUsage) {
           // Calculate the difference between the new quantity and the old quantity
@@ -49,7 +47,7 @@ async function createUsageItems(itemsUsageDataArray) {
             return {
               error: true,
               status: 400,
-              payload: `Insufficient available units for item with ID ${itemsUsageData.itemID}.`,
+              payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
             };
           }
 
@@ -63,16 +61,20 @@ async function createUsageItems(itemsUsageDataArray) {
             return {
               error: true,
               status: 400,
-              payload: `Insufficient available units for item with ID ${itemsUsageData.itemID}.`,
+              payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
             };
           }
 
           item.usedTimes = (parseInt(item.usedTimes) || 0) + 1;
           await item.save({ transaction });
 
-          await ItemsUsage.create(itemsUsageData, { transaction });
+          await ItemsUsage.create({
+            eventID: eventID,
+            itemID: itemData.itemID,
+            quantity: newQuantity,
+            isSelect: '0'
+          }, { transaction });
         }
-
         await item.save({ transaction });
       }
 
@@ -87,7 +89,7 @@ async function createUsageItems(itemsUsageDataArray) {
       return {
         error: false,
         status: 200,
-        payload: "Select Item successfully created .",
+        payload: "Select Item successfully created.",
       };
     } catch (error) {
       console.error("Error within transaction:", error);
@@ -102,7 +104,7 @@ async function createUsageItems(itemsUsageDataArray) {
     console.error("Error checking event or starting transaction:", error);
     return {
       error: true,
-      status: 500,
+        status: 500,
       payload: "Internal server error.",
     };
   }
