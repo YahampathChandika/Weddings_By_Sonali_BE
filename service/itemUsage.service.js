@@ -13,98 +13,76 @@ async function createUsageItems(data) {
       };
     }
 
-    const transaction = await ItemsUsage.sequelize.transaction();
+    for (let itemData of items) {
+      let existingUsage = await ItemsUsage.findOne({
+        where: {
+          eventID: eventID,
+          itemID: itemData.itemID
+        }
+      });
 
-    try {
-      for (let itemData of items) {
-        let existingUsage = await ItemsUsage.findOne({
-          where: {
-            eventID: eventID,
-            itemID: itemData.itemID
-          },
-          transaction
-        });
+      const item = await Items.findByPk(itemData.itemID);
+      if (!item) {
+        return {
+          error: true,
+          status: 404,
+          payload: `Item with ID ${itemData.itemID} not found.`,
+        };
+      }
 
-        const item = await Items.findByPk(itemData.itemID, { transaction });
-        if (!item) {
-          await transaction.rollback();
+      const newQuantity = parseInt(itemData.quantity) || 0;
+
+      if (existingUsage) {
+        const quantityDifference = newQuantity - (parseInt(existingUsage.quantity) || 0);
+        item.availableunits = (parseInt(item.availableunits) || 0) - quantityDifference;
+        if (item.availableunits < 0) {
           return {
             error: true,
-            status: 404,
-            payload: `Item with ID ${itemData.itemID} not found.`,
+            status: 400,
+            payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
           };
         }
 
-        const newQuantity = parseInt(itemData.quantity) || 0;
-
-        if (existingUsage) {
-          // Calculate the difference between the new quantity and the old quantity
-          const quantityDifference = newQuantity - (parseInt(existingUsage.quantity) || 0);
-
-          item.availableunits = (parseInt(item.availableunits) || 0) - quantityDifference;
-          if (item.availableunits < 0) {
-            await transaction.rollback();
-            return {
-              error: true,
-              status: 400,
-              payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
-            };
-          }
-
-          // Update the quantity in the existing row
-          existingUsage.quantity = newQuantity;
-          await existingUsage.save({ transaction });
-        } else {
-          item.availableunits = (parseInt(item.availableunits) || 0) - newQuantity;
-          if (item.availableunits < 0) {
-            await transaction.rollback();
-            return {
-              error: true,
-              status: 400,
-              payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
-            };
-          }
-
-          item.usedTimes = (parseInt(item.usedTimes) || 0) + 1;
-          await item.save({ transaction });
-
-          await ItemsUsage.create({
-            eventID: eventID,
-            itemID: itemData.itemID,
-            quantity: newQuantity,
-            isSelect: '0'
-          }, { transaction });
+        existingUsage.quantity = newQuantity;
+        await existingUsage.save();
+      } else {
+        item.availableunits = (parseInt(item.availableunits) || 0) - newQuantity;
+        if (item.availableunits < 0) {
+          return {
+            error: true,
+            status: 400,
+            payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
+          };
         }
-        await item.save({ transaction });
+
+        item.usedTimes = (parseInt(item.usedTimes) || 0) + 1;
+        await item.save();
+
+        await ItemsUsage.create({
+          eventID: eventID,
+          itemID: itemData.itemID,
+          quantity: newQuantity,
+          isSelect: '0'
+        });
       }
-
-      // Change the state of the event to 2 if it was previously 1
-      if (event.state === '1') {
-        event.state = '2';
-        await event.save({ transaction });
-      }
-
-      await transaction.commit();
-
-      return {
-        error: false,
-        status: 200,
-        payload: "Select Item successfully created.",
-      };
-    } catch (error) {
-      console.error("Error within transaction:", error);
-      await transaction.rollback();
-      return {
-        error: true,
-        status: 500,
-        payload: "Internal server error.",
-      };
+      await item.save();
     }
+
+    if (event.state === '1') {
+      event.state = '2';
+      await event.save();
+    }
+
+    return {
+      error: false,
+      status: 200,
+      payload: "Select Item successfully created.",
+    };
   } catch (error) {
-    console.error("Error checking event or starting transaction:", error);
+    console.error("Error within createUsageItems:", error);
     return {
       error: true,
-        status: 500,
+      status: 500,
       payload: "Internal server error.",
     };
   }
@@ -132,7 +110,6 @@ async function getAllSelectItems() {
     };
   } catch (error) {
     console.error("Error getting items service:", error);
-
     return {
       error: true,
       status: 500,
@@ -141,7 +118,6 @@ async function getAllSelectItems() {
   }
 }
 
-// itemsUsage.service.js
 async function getSelectItemById(id) {
   try {
     const itemUsage = await ItemsUsage.findOne({
@@ -150,7 +126,7 @@ async function getSelectItemById(id) {
         {
           model: Items,
           as: 'items',
-        }  
+        }
       ],
     });
 
@@ -282,67 +258,49 @@ async function isSelectItem(data) {
       };
     }
 
-    const transaction = await ItemsUsage.sequelize.transaction();
-
-    try {
-      for (let itemData of items) {
-        let existingUsage = await ItemsUsage.findOne({
-          where: {
-            eventID: eventID,
-            itemID: itemData.itemID
-          },
-          transaction
-        });
-
-        if (!existingUsage) {
-          await transaction.rollback();
-          return {
-            error: true,
-            status: 404,
-            payload: `ItemUsage with itemID ${itemData.itemID} not found.`,
-          };
+    for (let itemData of items) {
+      let existingUsage = await ItemsUsage.findOne({
+        where: {
+          eventID: eventID,
+          itemID: itemData.itemID
         }
-
-        existingUsage.isSelect = itemData.isSelect;
-        await existingUsage.save({ transaction });
-      }
-
-      // Check if any item has isSelect set to 1
-      const itemsForEvent = await ItemsUsage.findAll({
-        where: { eventID },
-        attributes: ['isSelect'],
-        transaction
       });
 
-      const anySelected = itemsForEvent.some(item => item.isSelect === '1');
-      const allDeselected = itemsForEvent.every(item => item.isSelect === '0');
-
-      // Update event state based on isSelect status
-      if (anySelected) {
-        event.state = '3';
-      } else if (allDeselected) {
-        event.state = '2';
+      if (!existingUsage) {
+        return {
+          error: true,
+          status: 404,
+          payload: `ItemUsage with itemID ${itemData.itemID} not found.`,
+        };
       }
 
-      await event.save({ transaction });
-      await transaction.commit();
-
-      return {
-        error: false,
-        status: 200,
-        payload: "ItemUsage isSelect status successfully updated.",
-      };
-    } catch (error) {
-      console.error("Error within transaction:", error);
-      await transaction.rollback();
-      return {
-        error: true,
-        status: 500,
-        payload: "Internal server error.",
-      };
+      existingUsage.isSelect = itemData.isSelect;
+      await existingUsage.save();
     }
+
+    const itemsForEvent = await ItemsUsage.findAll({
+      where: { eventID },
+      attributes: ['isSelect']
+    });
+
+    const anySelected = itemsForEvent.some(item => item.isSelect === '1');
+    const allDeselected = itemsForEvent.every(item => item.isSelect === '0');
+
+    if (anySelected) {
+      event.state = '3';
+    } else if (allDeselected) {
+      event.state = '2';
+    }
+
+    await event.save();
+
+    return {
+      error: false,
+      status: 200,
+      payload: "ItemUsage isSelect status successfully updated.",
+    };
   } catch (error) {
-    console.error("Error checking event or starting transaction:", error);
+    console.error("Error updating isSelect status:", error);
     return {
       error: true,
       status: 500,
