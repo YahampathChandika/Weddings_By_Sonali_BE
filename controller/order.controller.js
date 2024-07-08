@@ -1,4 +1,4 @@
-const orderService = require('../service/order.service');
+const orderService = require("../service/order.service");
 
 async function createOrder(req, res) {
   try {
@@ -61,12 +61,12 @@ async function getOrderById(req, res) {
         error: true,
         payload: result.payload,
       });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
     }
-
-    return res.status(result.status).json({
-      error: false,
-      payload: result.payload,
-    });
   } catch (error) {
     console.log("Error getting order: ", error);
     return res.status(500).json({

@@ -16,7 +16,6 @@ async function createNewOrder(orderDetails) {
       eventTime,
       returnDate,
       itemTakeDate,
-      state,
     } = orderDetails;
 
     // Create a customer
@@ -66,83 +65,61 @@ async function getAllOrders() {
         },
       ],
     });
-
-    // Prepare the result object
-    // const orders = customers.map(customer => {
-    //     return {
-    //         customerId: customer.id,
-    //         name: customer.name,
-    //         email: customer.email,
-    //         contactNo: customer.contactNo,
-    //         address: customer.address,
-    //         events: customer.events.map(event => ({
-    //             eventName: event.eventName,
-    //             eventDate: event.eventDate,
-    //             pax: event.pax,
-    //             venue: event.venue,
-    //             eventTime: event.eventTime,
-    //             returnDate: event.returnDate,
-    //             itemTakeDate: event.itemTakeDate,
-    //             state: event.state
-    //         }))
-    //     };
-    // });
-
-    return {
-      error: false,
-      status: 200,
-      payload: orders,
-    };
+    if (!orders) {
+      return {
+        error: true,
+        status: 404,
+        payload: "No orders found!",
+      };
+    } else {
+      return {
+        error: false,
+        status: 200,
+        payload: orders,
+      };
+    }
   } catch (error) {
-    console.error(error);
-
-    return {
-      error: true,
-      status: 500,
-      payload: "An error occurred while fetching the orders.",
-    };
+    console.error("Error getting all orders Service : ", error);
+    throw error;
   }
 }
 
 async function getOrderById(id) {
-    try {
-      const order = await Events.findOne({
-        where: {
-          id: id,
+  try {
+    const order = await Events.findOne({
+      where: {
+        id: id,
+      },
+      include: [
+        {
+          model: Customers,
+          as: "customer",
         },
-        include: [
-            {
-              model: Customers,
-              as: "customer",
-            },
-        ],
-      });
-  
-      if (!order) {
-        return {
-          error: true,
-          status: 404,
-          payload: "Order not found.",
-        };
-      }
-  
+      ],
+    });
+
+    if (!order) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Order not found.",
+      };
+    } else {
       return {
         error: false,
         status: 200,
         payload: order,
       };
-    } catch (e) {
-      console.error(e);
-      return {
-        error: true,
-        status: 500,
-        payload: "An error occurred while fetching the order.",
-      };
     }
+  } catch (e) {
+    console.error(e);
+    console.error("Error getting order by id Service : ", e);
+    throw error;
   }
-  
-  module.exports = {
-    createNewOrder,
-    getAllOrders,
-    getOrderById
-  };
+}
+
+module.exports = {
+  createNewOrder,
+  getAllOrders,
+  getOrderById,
+};
