@@ -270,12 +270,92 @@ async function updateSelctItem(id, updateData) {
   }
 }
 
+async function isSelectItem(data) {
+  try {
+    const { eventID, items } = data;
+    const event = await Events.findByPk(eventID);
+    if (!event) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Event not found.",
+      };
+    }
 
+    const transaction = await ItemsUsage.sequelize.transaction();
+
+    try {
+      for (let itemData of items) {
+        let existingUsage = await ItemsUsage.findOne({
+          where: {
+            eventID: eventID,
+            itemID: itemData.itemID
+          },
+          transaction
+        });
+
+        if (!existingUsage) {
+          await transaction.rollback();
+          return {
+            error: true,
+            status: 404,
+            payload: `ItemUsage with itemID ${itemData.itemID} not found.`,
+          };
+        }
+
+        existingUsage.isSelect = itemData.isSelect;
+        await existingUsage.save({ transaction });
+      }
+
+      // Check if any item has isSelect set to 1
+      const itemsForEvent = await ItemsUsage.findAll({
+        where: { eventID },
+        attributes: ['isSelect'],
+        transaction
+      });
+
+      const anySelected = itemsForEvent.some(item => item.isSelect === '1');
+      const allDeselected = itemsForEvent.every(item => item.isSelect === '0');
+
+      // Update event state based on isSelect status
+      if (anySelected) {
+        event.state = '3';
+      } else if (allDeselected) {
+        event.state = '2';
+      }
+
+      await event.save({ transaction });
+      await transaction.commit();
+
+      return {
+        error: false,
+        status: 200,
+        payload: "ItemUsage isSelect status successfully updated.",
+      };
+    } catch (error) {
+      console.error("Error within transaction:", error);
+      await transaction.rollback();
+      return {
+        error: true,
+        status: 500,
+        payload: "Internal server error.",
+      };
+    }
+  } catch (error) {
+    console.error("Error checking event or starting transaction:", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
 
 module.exports = {
   createUsageItems,
   getAllSelectItems,
   getSelectItemById,
   deleteSelectItem,
-  updateSelctItem
+  updateSelctItem,
+  isSelectItem
 };

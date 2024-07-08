@@ -156,11 +156,60 @@ async function updateSelctItem(req, res) {
 }
 
 
+async function isSelectItem(req, res) {
+  try {
+    const { eventID, items } = req.body;
+
+    if (!eventID) {
+      return res.status(400).json({
+        error: true,
+        payload: "eventID is required.",
+      });
+    }
+
+    if (!Array.isArray(items)) {
+      return res.status(400).json({
+        error: true,
+        payload: "items should be an array of items data.",
+      });
+    }
+
+    for (const item of items) {
+      if (typeof item.itemID === 'undefined' || typeof item.isSelect === 'undefined') {
+        return res.status(400).json({
+          error: true,
+          payload: "itemID and isSelect are required for all items.",
+        });
+      }
+    }
+
+    const result = await itemsUsageService.isSelectItem({ eventID, items });
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.log("Error updating isSelect status of items: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: error,
+    });
+  }
+}
 
 module.exports = {
   createItemsUsage,
   getAllSelectItems,
   getSelectItemUsageById,
   deleteSelectItem,
-  updateSelctItem
+  updateSelctItem,
+  isSelectItem,
 };
