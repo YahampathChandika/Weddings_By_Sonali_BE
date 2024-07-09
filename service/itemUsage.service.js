@@ -1,5 +1,6 @@
 const { ItemsUsage, Items, Events, Customers } = require("../models");
 
+// Create Usage Items
 async function createUsageItems(data) {
   try {
     const { eventID, items } = data;
@@ -17,8 +18,8 @@ async function createUsageItems(data) {
       let existingUsage = await ItemsUsage.findOne({
         where: {
           eventID: eventID,
-          itemID: itemData.itemID
-        }
+          itemID: itemData.itemID,
+        },
       });
 
       const item = await Items.findByPk(itemData.itemID);
@@ -62,14 +63,14 @@ async function createUsageItems(data) {
           eventID: eventID,
           itemID: itemData.itemID,
           quantity: newQuantity,
-          isSelect: '0'
+          isSelect: "0",
         });
       }
       await item.save();
     }
 
-    if (event.state === '1') {
-      event.state = '2';
+    if (event.state === "1") {
+      event.state = "2";
       await event.save();
     }
 
@@ -125,8 +126,8 @@ async function getSelectItemById(id) {
       include: [
         {
           model: Items,
-          as: 'items',
-        }
+          as: "items",
+        },
       ],
     });
 
@@ -173,7 +174,7 @@ async function deleteSelectItem(id) {
       }
 
       item.availableunits = (parseInt(item.availableunits) || 0) + (parseInt(selectItems.quantity) || 0);
-      item.usedTimes = Math.max((parseInt(item.usedTimes) || 0) - 1, 0); // Ensure usedTimes does not go below 0
+      item.usedTimes = Math.max((parseInt(item.usedTimes) || 0) - 1, 0);
       await item.save();
 
       await selectItems.destroy();
@@ -194,7 +195,7 @@ async function deleteSelectItem(id) {
   }
 }
 
-async function updateSelctItem(id, updateData) {
+async function updateSelectItem(id, updateData) {
   try {
     const updateSelectItem = await ItemsUsage.findByPk(id);
 
@@ -262,8 +263,8 @@ async function isSelectItem(data) {
       let existingUsage = await ItemsUsage.findOne({
         where: {
           eventID: eventID,
-          itemID: itemData.itemID
-        }
+          itemID: itemData.itemID,
+        },
       });
 
       if (!existingUsage) {
@@ -280,16 +281,15 @@ async function isSelectItem(data) {
 
     const itemsForEvent = await ItemsUsage.findAll({
       where: { eventID },
-      attributes: ['isSelect']
+      attributes: ["isSelect"],
     });
 
-    const anySelected = itemsForEvent.some(item => item.isSelect === '1');
-    const allDeselected = itemsForEvent.every(item => item.isSelect === '0');
+    const allSelect = itemsForEvent.every((item) => item.isSelect === "1");
 
-    if (anySelected) {
-      event.state = '3';
-    } else if (allDeselected) {
-      event.state = '2';
+    if (allSelect) {
+      event.state = "3";
+    } else {
+      event.state = "2";
     }
 
     await event.save();
@@ -309,11 +309,101 @@ async function isSelectItem(data) {
   }
 }
 
+// Return Items
+// async function returnItems(data) {
+//   try {
+//     const { eventID, items } = data;
+
+//     const event = await Events.findByPk(eventID);
+//     if (!event) {
+//       return {
+//         error: true,
+//         status: 404,
+//         payload: "Event not found.",
+//       };
+//     }
+
+//     for (let itemData of items) {
+//       let selectItem = await ItemsUsage.findOne({
+//         where: {
+//           eventID: eventID,
+//           itemID: itemData.itemID,
+//         },
+//       });
+
+//       if (!selectItem) {
+//         return {
+//           error: true,
+//           status: 404,
+//           payload: `ItemUsage with itemID ${itemData.itemID} not found.`,
+//         };
+//       }
+
+//       const item = await Items.findByPk(itemData.itemID);
+//       if (!item) {
+//         return {
+//           error: true,
+//           status: 404,
+//           payload: `Item with ID ${itemData.itemID} not found.`,
+//         };
+//       }
+
+//       const returnQuantity = parseInt(itemData.returnQuantity) || 0;
+//       const damagedUnits = parseInt(itemData.damage) || 0;
+//       const goodUnits = returnQuantity - damagedUnits;
+
+//       if (goodUnits < 0) {
+//         return {
+//           error: true,
+//           status: 400,
+//           payload: "Damaged units cannot exceed the returned quantity.",
+//         };
+//       }
+
+//       const totalUsedQuantity = parseInt(selectItem.quantity) || 0;
+//       const missingUnits = totalUsedQuantity - (returnQuantity + damagedUnits);
+
+//       const initialDamaged = selectItem.damaged || 0;
+//       const initialMissing = selectItem.missing || 0;
+
+//       if (initialDamaged !== damagedUnits || initialMissing !== missingUnits) {
+//         if (goodUnits > 0) {
+//           item.availableunits = (parseInt(item.availableunits) || 0) + goodUnits;
+//         }
+
+//         item.damage = (parseInt(item.damage) || 0) + (damagedUnits );
+//         item.missing = (parseInt(item.missing) || 0) + (missingUnits);
+
+//         await item.save();
+
+//         selectItem.damaged = damagedUnits;
+//         selectItem.missing = missingUnits;
+//         await selectItem.save();
+//       }
+//     }
+
+//     return {
+//       error: false,
+//       status: 200,
+//       payload: "Items successfully returned!",
+//     };
+//   } catch (error) {
+//     console.error("Error returning items:", error);
+//     return {
+//       error: true,
+//       status: 500,
+//       payload: "Internal server error.",
+//     };
+//   }
+// }
+
+
 module.exports = {
   createUsageItems,
   getAllSelectItems,
   getSelectItemById,
   deleteSelectItem,
-  updateSelctItem,
-  isSelectItem
+  updateSelectItem,
+  isSelectItem,
+  // returnItems,
 };

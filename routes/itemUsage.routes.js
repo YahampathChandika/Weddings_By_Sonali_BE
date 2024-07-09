@@ -1,5 +1,5 @@
 const express = require("express");
-const createItemsUsageController = require("../controller/itemUsage.controller");
+const ItemsUsageController = require("../controller/itemUsage.controller");
 const authMiddleware = require("../middleware/auth.middleware"); 
 
 function itemUsageRoutes() {
@@ -8,12 +8,13 @@ function itemUsageRoutes() {
   router.use(express.json());
   router.use(authMiddleware);
 
-  router.post("/createUsageItems", createItemsUsageController.createItemsUsage);
-  router.get("/getAllSelectItems", createItemsUsageController.getAllSelectItems);
-  router.get("/getSelectItemsById/:id", createItemsUsageController.getSelectItemUsageById);
-  router.delete("/deleteSelectItem/:id", createItemsUsageController.deleteSelectItem);
-  router.patch("/updateSelectItem/:id", createItemsUsageController.updateSelctItem);
-  router.post("/isSelectItem", createItemsUsageController.isSelectItem);
+  router.post("/createUsageItems", ItemsUsageController.createItemsUsage);
+  router.get("/getAllSelectItems", ItemsUsageController.getAllSelectItems);
+  router.get("/getSelectItemsById/:id", ItemsUsageController.getSelectItemUsageById);
+  router.delete("/deleteSelectItem/:id", ItemsUsageController.deleteSelectItem);
+  router.patch("/updateSelectItem/:id", ItemsUsageController.updateSelectItem);
+  router.post("/isSelectItem", ItemsUsageController.isSelectItem);
+  router.post("/reternItems", ItemsUsageController.returnItems);
 
 
   return router;

@@ -104,7 +104,6 @@ async function getItemById(id) {
   }
 }
 
-//Delete an Items
 // Delete an Item
 async function deleteItems(id) {
   try {
