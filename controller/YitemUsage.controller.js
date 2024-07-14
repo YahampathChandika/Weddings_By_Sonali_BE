@@ -1,27 +1,36 @@
-const itemsUsageService = require("../service//YitemUsage.service");
+const itemsUsageService = require("../service/YitemUsage.service");
 
 async function addEventItems(req, res) {
   try {
     const { eventId, items } = req.body;
 
-    if (!eventId) {
+    if (!Array.isArray(items)) {
       return res.status(400).json({
         error: true,
-        payload: "eventId is required.",
+        payload: "items should be an array of items usage data.",
       });
     }
 
-    for (let item of items) {
-      if (!item.itemID) {
-        return res.status(400).json({
-          error: true,
-          payload: "itemId is required for all items.",
-        });
-      }
+    const result = await itemsUsageService.addEventItems({ eventId, items });
 
-      const response = await itemsUsageService.addEventItems(item.eventId, item);
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
     }
-  } catch (e) {}
+  } catch (error) {
+    console.log("Error creating ItemsUsage controller: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: "Internal server error",
+    });
+  }
 }
 
 module.exports = { addEventItems };

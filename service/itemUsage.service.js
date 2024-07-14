@@ -3,7 +3,7 @@ const { ItemsUsage, Items, Events, Customers } = require("../models");
 async function createUsageItems(data) {
   try {
     const { eventID, items } = data;
-    
+
     const event = await Events.findByPk(eventID);
     if (!event) {
       return {
@@ -17,8 +17,8 @@ async function createUsageItems(data) {
       let existingUsage = await ItemsUsage.findOne({
         where: {
           eventID: eventID,
-          itemID: itemData.itemID
-        }
+          itemID: itemData.itemID,
+        },
       });
 
       const item = await Items.findByPk(itemData.itemID);
@@ -33,8 +33,10 @@ async function createUsageItems(data) {
       const newQuantity = parseInt(itemData.quantity) || 0;
 
       if (existingUsage) {
-        const quantityDifference = newQuantity - (parseInt(existingUsage.quantity) || 0);
-        item.availableunits = (parseInt(item.availableunits) || 0) - quantityDifference;
+        const quantityDifference =
+          newQuantity - (parseInt(existingUsage.quantity) || 0);
+        item.availableunits =
+          (parseInt(item.availableunits) || 0) - quantityDifference;
         if (item.availableunits < 0) {
           return {
             error: true,
@@ -46,7 +48,8 @@ async function createUsageItems(data) {
         existingUsage.quantity = newQuantity;
         await existingUsage.save();
       } else {
-        item.availableunits = (parseInt(item.availableunits) || 0) - newQuantity;
+        item.availableunits =
+          (parseInt(item.availableunits) || 0) - newQuantity;
         if (item.availableunits < 0) {
           return {
             error: true,
@@ -62,14 +65,14 @@ async function createUsageItems(data) {
           eventID: eventID,
           itemID: itemData.itemID,
           quantity: newQuantity,
-          isSelect: '0'
+          isSelect: "0",
         });
       }
       await item.save();
     }
 
-    if (event.state === '1') {
-      event.state = '2';
+    if (event.state === "1") {
+      event.state = "2";
       await event.save();
     }
 
@@ -125,8 +128,8 @@ async function getSelectItemById(id) {
       include: [
         {
           model: Items,
-          as: 'items',
-        }
+          as: "items",
+        },
       ],
     });
 
@@ -172,7 +175,9 @@ async function deleteSelectItem(id) {
         };
       }
 
-      item.availableunits = (parseInt(item.availableunits) || 0) + (parseInt(selectItems.quantity) || 0);
+      item.availableunits =
+        (parseInt(item.availableunits) || 0) +
+        (parseInt(selectItems.quantity) || 0);
       item.usedTimes = Math.max((parseInt(item.usedTimes) || 0) - 1, 0); // Ensure usedTimes does not go below 0
       await item.save();
 
@@ -218,7 +223,8 @@ async function updateSelctItem(id, updateData) {
     const oldQuantity = parseInt(updateSelectItem.quantity) || 0;
     const newQuantity = parseInt(updateData.quantity) || 0;
 
-    item.availableunits = (parseInt(item.availableunits) || 0) + oldQuantity - newQuantity;
+    item.availableunits =
+      (parseInt(item.availableunits) || 0) + oldQuantity - newQuantity;
 
     if (item.availableunits < 0) {
       return {
@@ -262,8 +268,8 @@ async function isSelectItem(data) {
       let existingUsage = await ItemsUsage.findOne({
         where: {
           eventID: eventID,
-          itemID: itemData.itemID
-        }
+          itemID: itemData.itemID,
+        },
       });
 
       if (!existingUsage) {
@@ -280,16 +286,16 @@ async function isSelectItem(data) {
 
     const itemsForEvent = await ItemsUsage.findAll({
       where: { eventID },
-      attributes: ['isSelect']
+      attributes: ["isSelect"],
     });
 
-    const anySelected = itemsForEvent.some(item => item.isSelect === '1');
-    const allDeselected = itemsForEvent.every(item => item.isSelect === '0');
+    const anySelected = itemsForEvent.some((item) => item.isSelect === "1");
+    const allDeselected = itemsForEvent.every((item) => item.isSelect === "0");
 
     if (anySelected) {
-      event.state = '3';
+      event.state = "3";
     } else if (allDeselected) {
-      event.state = '2';
+      event.state = "2";
     }
 
     await event.save();
@@ -315,5 +321,5 @@ module.exports = {
   getSelectItemById,
   deleteSelectItem,
   updateSelctItem,
-  isSelectItem
+  isSelectItem,
 };

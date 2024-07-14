@@ -1,23 +1,31 @@
 const { where } = require("sequelize");
 const { ItemsUsage, Items, Events, Customers } = require("../models");
 
-//Add Event Items
+// Add Event Items
 async function addEventItems(data) {
   try {
     const { eventId, items } = data;
-
     const event = await Events.findByPk(eventId);
 
     if (!event) {
       return {
         error: true,
         status: 404,
-        message: "Event not found!",
+        payload: "Event not found!",
       };
     }
 
     for (let itemData of items) {
       const item = await Items.findByPk(itemData.itemId);
+
+      if (!item) {
+        return {
+          error: true,
+          status: 404,
+          payload: `Item with ID ${itemData.itemId} not found.`,
+        };
+      }
+
       const existingUsage = await ItemsUsage.findOne({
         where: {
           eventId: eventId,
@@ -25,51 +33,44 @@ async function addEventItems(data) {
         },
       });
 
-      if (!item) {
-        return {
-          error: true,
-          status: 404,
-          payload: `Item with ID ${itemData.itemID} not found.`,
-        };
-      }
-
       if (existingUsage) {
-        (item.availableunits =
-          (item.availableunits || 0) +
-          existingUsage.quantity -
-          itemData.quantity),
-          (existingUsage.quantity = itemData.quantity);
+        const updatedAvailableUnits =
+          item.availableunits + existingUsage.quantity - itemData.quantity;
 
-        if (item.availableunits < 0) {
+        if (updatedAvailableUnits < 0) {
           return {
             error: true,
             status: 400,
-            payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
+            payload: `Insufficient available units for item with ID ${itemData.itemId}.`,
           };
         }
+
+        item.availableunits = updatedAvailableUnits;
+        existingUsage.quantity = itemData.quantity;
+
         await item.save();
         await existingUsage.save();
       } else {
-        item.availableunits = (item.availableunits || 0) - itemData.quantity;
+        const updatedAvailableUnits = item.availableunits - itemData.quantity;
 
-        if (item.availableunits < 0) {
+        if (updatedAvailableUnits < 0) {
           return {
             error: true,
             status: 400,
-            payload: `Insufficient available units for item with ID ${itemData.itemID}.`,
+            payload: `Insufficient available units for item with ID ${itemData.itemId}.`,
           };
         }
 
+        item.availableunits = updatedAvailableUnits;
         await item.save();
 
         await ItemsUsage.create({
           eventID: eventId,
-          itemID: itemData.itemID,
+          itemID: itemData.itemId,
           quantity: itemData.quantity,
           isSelect: "0",
         });
       }
-      await item.save();
     }
 
     if (event.state === "1") {
@@ -80,10 +81,10 @@ async function addEventItems(data) {
     return {
       error: false,
       status: 200,
-      payload: "Select Item successfully created.",
+      payload: "Event Items Added Successfully",
     };
   } catch (error) {
-    console.error("Error within createUsageItems:", error);
+    console.error("Error within addEventItems:", error);
     return {
       error: true,
       status: 500,

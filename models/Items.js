@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     quantity: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     usedTimes: {
@@ -29,10 +29,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     availableunits: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true,
-    }
-
+    },
   });
   return Items;
 };

@@ -8,7 +8,7 @@ function yItemUsageRoutes() {
   router.use(express.json());
   router.use(authMiddleware);
 
-//   router.post("/registerUser", YitemUsage.registerUser);
+  router.post("/addEventItems", YitemUsage.addEventItems);
 //   router.get("/getUserRoles", YitemUsage.getUserRoles);
 //   router.get("/getAllUsers", YitemUsage.getAllUsers);
 //   router.get("/getUserById/:id", YitemUsage.getUserById);
