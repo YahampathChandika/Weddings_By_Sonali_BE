@@ -9,7 +9,9 @@ function yItemUsageRoutes() {
   router.use(authMiddleware);
 
   router.post("/addEventItems", YitemUsage.addEventItems);
-//   router.get("/getUserRoles", YitemUsage.getUserRoles);
+  router.post("/releaseEventItems", YitemUsage.releaseEventItems);
+  router.post("/returnEventItems", YitemUsage.returnEventItems);
+  router.get("/getReturnItemList/:eventId", YitemUsage.getReturnItemList);
 //   router.get("/getAllUsers", YitemUsage.getAllUsers);
 //   router.get("/getUserById/:id", YitemUsage.getUserById);
 //   router.patch("/updateUser/:id", YitemUsage.updateUser);

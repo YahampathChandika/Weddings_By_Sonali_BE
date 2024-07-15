@@ -9,15 +9,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     usedTimes: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
-    demage: {
-      type: DataTypes.STRING,
+    damaged: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     missing: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     code: {
