@@ -8,7 +8,7 @@ function orderRoutes() {
   router.use(express.json());
   router.use(authMiddleware);
 
-  router.post("/crateOrder", orderController.createOrder);
+  router.post("/addNewOrder", orderController.createOrder);
   router.get("/getAllOrders", orderController.getAllOrders);
   router.get("/getOrderById/:id", orderController.getOrderById);
 //   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
