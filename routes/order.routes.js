@@ -11,6 +11,8 @@ function orderRoutes() {
   router.post("/addNewOrder", orderController.createOrder);
   router.get("/getAllOrders", orderController.getAllOrders);
   router.get("/getOrderById/:id", orderController.getOrderById);
+  router.get("/getOrdersByState/:state", orderController.getOrdersByState);
+  router.get('/getOrderMatrices', orderController.getOrderMatrices);
 //   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
 //   router.patch("/updateItem/:id", createItemsUsageController.updateItem);
 

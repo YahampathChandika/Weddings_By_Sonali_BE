@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
-    itemTakeDate: {
+    releaseDate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
@@ -32,7 +32,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    
   });
   return Events;
 };

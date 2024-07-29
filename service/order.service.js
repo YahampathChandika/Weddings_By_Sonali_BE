@@ -1,4 +1,4 @@
-const { where } = require("sequelize");
+const { sequelize } = require("../models"); // Ensure sequelize is imported correctly
 const { Events, Customers } = require("../models");
 
 // Create New Order
@@ -15,7 +15,7 @@ async function createNewOrder(orderDetails) {
       venue,
       eventTime,
       returnDate,
-      itemTakeDate,
+      releaseDate,
     } = orderDetails;
 
     // Create a customer
@@ -34,7 +34,7 @@ async function createNewOrder(orderDetails) {
       venue,
       eventTime,
       returnDate,
-      itemTakeDate,
+      releaseDate,
       state: "1",
       customerId: createdCustomer.id,
     });
@@ -55,6 +55,7 @@ async function createNewOrder(orderDetails) {
   }
 }
 
+// Get all orders
 async function getAllOrders() {
   try {
     const orders = await Events.findAll({
@@ -84,6 +85,7 @@ async function getAllOrders() {
   }
 }
 
+// Get order by ID
 async function getOrderById(id) {
   try {
     const order = await Events.findOne({
@@ -118,8 +120,89 @@ async function getOrderById(id) {
   }
 }
 
+// Get orders by state
+async function getOrdersByState(state) {
+  try {
+    const orders = await Events.findAll({
+      where: {
+        state: state,
+      },
+      include: [
+        {
+          model: Customers,
+          as: "customer",
+        },
+      ],
+    });
+    if (!orders || orders.length === 0) {
+      return {
+        error: true,
+        status: 404,
+        payload: "No orders found!",
+      };
+    } else {
+      return {
+        error: false,
+        status: 200,
+        payload: orders,
+      };
+    }
+  } catch (error) {
+    console.error("Error getting all orders Service : ", error);
+    throw error;
+  }
+}
+
+// Get order matrices
+async function getOrderMatrices() {
+  try {
+    const states = {
+      1: "waiting",
+      2: "upcoming",
+      3: "ongoing",
+      4: "past",
+    };
+
+    const counts = await Events.findAll({
+      attributes: [
+        "state",
+        [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+      ],
+      group: ["state"],
+      raw: true,
+    });
+
+    const result = counts.map((count) => ({
+      stateName: states[count.state],
+      eventCount: count.count,
+    }));
+
+    // Ensure all states are included, even if count is 0
+    Object.values(states).forEach((stateName) => {
+      if (!result.some((state) => state.stateName === stateName)) {
+        result.push({ stateName, eventCount: 0 });
+      }
+    });
+
+    return {
+      error: false,
+      status: 200,
+      payload: result,
+    };
+  } catch (error) {
+    console.error("Error Getting Order Counts By State Service: ", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal Server Error",
+    };
+  }
+}
+
 module.exports = {
   createNewOrder,
   getAllOrders,
   getOrderById,
+  getOrdersByState,
+  getOrderMatrices,
 };
