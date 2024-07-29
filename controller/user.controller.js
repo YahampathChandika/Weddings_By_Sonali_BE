@@ -3,13 +3,21 @@ const bcrypt = require("bcrypt");
 const { sign } = require("jsonwebtoken");
 
 //Register User
-
 async function registerUser(req, res) {
   try {
     const userRole_id = req.user.roleId;
     const { name, email, contactNo, address, username, password, roleId } =
       req.body;
-
+    console.log(
+      "Register:",
+      name,
+      email,
+      contactNo,
+      address,
+      username,
+      password,
+      roleId
+    );
     if (![1].includes(userRole_id)) {
       return res.status(403).json({
         error: true,
@@ -107,7 +115,7 @@ async function loginUser(req, res) {
 //Get User Roles
 async function getUserRoles(req, res) {
   try {
-    console.log("Getting")
+    console.log("Getting");
     const result = await userService.getUserRoles();
 
     if (result.error) {
@@ -130,6 +138,7 @@ async function getUserRoles(req, res) {
   }
 }
 
+// Get All Users
 async function getAllUsers(req, res) {
   try {
     const userRole_id = req.user.roleId;
@@ -149,9 +158,22 @@ async function getAllUsers(req, res) {
         payload: result.payload,
       });
     } else {
+      const transformedPayload = result.payload.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        contactNo: user.contactNo,
+        address: user.address,
+        username: user.username,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        roleId: user.roleId,
+        role: user.roles.role,
+      }));
+
       return res.status(result.status).json({
         error: false,
-        payload: result.payload,
+        payload: transformedPayload,
       });
     }
   } catch (err) {
