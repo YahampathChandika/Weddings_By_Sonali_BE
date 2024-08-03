@@ -1,5 +1,5 @@
 const { sequelize } = require("../models"); // Ensure sequelize is imported correctly
-const { Events, Customers } = require("../models");
+const { Events, Customers, ItemsUsage } = require("../models");
 
 // Create New Order
 async function createNewOrder(orderDetails) {

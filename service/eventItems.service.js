@@ -15,9 +15,21 @@ async function addEventItems(data) {
       };
     }
 
+    // Fetch existing usages for the event
+    const existingUsages = await ItemsUsage.findAll({
+      where: { eventId: eventId },
+    });
+
+    // Create a map for quick lookup of existing usages
+    const existingUsagesMap = new Map();
+    existingUsages.forEach((usage) => {
+      existingUsagesMap.set(usage.itemId, usage);
+    });
+
+    // Process each item in the new items list
     for (let itemData of items) {
       const item = await Items.findByPk(itemData.itemId);
-      console.log("itemData", item)
+      console.log("itemData", item);
 
       if (!item) {
         return {
@@ -27,18 +39,11 @@ async function addEventItems(data) {
         };
       }
 
-      let existingUsage = await ItemsUsage.findOne({
-        where: {
-          eventId: eventId,
-          itemId: itemData.itemId,
-        },
-      });
+      const existingUsage = existingUsagesMap.get(itemData.itemId);
 
       if (existingUsage) {
         const updatedAvailableUnits =
           item.availableunits + existingUsage.quantity - itemData.quantity;
-
-          console.log("updatedAvailableUnits", updatedAvailableUnits);
 
         if (updatedAvailableUnits < 0) {
           return {
@@ -53,6 +58,9 @@ async function addEventItems(data) {
 
         await item.save();
         await existingUsage.save();
+
+        // Remove processed item from the map
+        existingUsagesMap.delete(itemData.itemId);
       } else {
         const updatedAvailableUnits = item.availableunits - itemData.quantity;
 
@@ -76,6 +84,23 @@ async function addEventItems(data) {
       }
     }
 
+    // Handle items that were not in the new items list (deleted items)
+    for (let [itemId, existingUsage] of existingUsagesMap) {
+      const item = await Items.findByPk(itemId);
+
+      if (item) {
+        item.availableunits += existingUsage.quantity;
+        await item.save();
+      }
+
+      await ItemsUsage.destroy({
+        where: {
+          eventId: eventId,
+          itemId: itemId,
+        },
+      });
+    }
+
     if (event.state === "1") {
       event.state = "2";
       await event.save();
@@ -84,10 +109,72 @@ async function addEventItems(data) {
     return {
       error: false,
       status: 200,
-      payload: "Event Items Added Successfully",
+      payload: "Event Items Updated Successfully",
     };
   } catch (error) {
     console.error("Error within addEventItems:", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
+
+// Get event items by id
+async function getEventItemsById(eventId) {
+  try {
+    const event = await Events.findByPk(eventId, {
+      include: [
+        {
+          model: ItemsUsage,
+          as: "itemsUsage",
+          include: [
+            {
+              model: Items,
+              as: "items",
+              attributes: [
+                "code",
+                "itemName",
+                "type",
+                "usedTimes",
+                "availableunits",
+              ],
+            },
+          ],
+          attributes: ["quantity", "returned", "damaged", "missing", "itemId"],
+        },
+      ],
+    });
+
+    if (!event) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Event not found!",
+      };
+    }
+
+    const itemsDetails = event.itemsUsage.map((usage) => ({
+      code: usage.items.code,
+      name: usage.items.itemName,
+      type: usage.items.type,
+      usage: usage.items.usedTimes,
+      available: usage.items.availableunits,
+      quantity: usage.quantity,
+      returned: usage.returned,
+      damaged: usage.damaged,
+      missing: usage.missing,
+      itemId: usage.itemId,
+    }));
+
+    return {
+      error: false,
+      status: 200,
+      payload: itemsDetails,
+    };
+  } catch (error) {
+    console.error("Error within getEventItemsById:", error);
     return {
       error: true,
       status: 500,
@@ -259,8 +346,10 @@ async function getReturnItemList(eventId) {
 
     const eventItems = await ItemsUsage.findAll({
       where: {
-        eventID: eventId,
+        eventId: eventId,
+        isSelect: true,
       },
+      attributes: ["itemId", "quantity", "returned", "damaged", "missing"],
       include: [
         {
           model: Items,
@@ -268,14 +357,32 @@ async function getReturnItemList(eventId) {
           attributes: ["code", "itemName", "type"],
         },
       ],
-      attributes: ["quantity", "returned", "damaged", "missing"],
     });
 
-    return {
-      error: false,
-      status: 200,
-      payload: eventItems,
-    };
+    const formattedItems = eventItems.map((eventItem) => ({
+      itemId: eventItem.itemId,
+      code: eventItem.items.code,
+      itemName: eventItem.items.itemName,
+      type: eventItem.items.type,
+      quantity: eventItem.quantity,
+      returned: eventItem.returned,
+      damaged: eventItem.damaged,
+      missing: eventItem.missing,
+    }));
+
+    if (eventItems.length === 0) {
+      return {
+        error: true,
+        status: 404,
+        payload: "No items selected for release.",
+      };
+    } else {
+      return {
+        error: false,
+        status: 200,
+        payload: formattedItems,
+      };
+    }
   } catch (e) {
     console.error("Error getting return item list: ", e);
     return {
@@ -288,6 +395,7 @@ async function getReturnItemList(eventId) {
 
 module.exports = {
   addEventItems,
+  getEventItemsById,
   releaseEventItems,
   returnEventItems,
   getReturnItemList,

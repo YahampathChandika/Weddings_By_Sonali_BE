@@ -34,6 +34,33 @@ async function addEventItems(req, res) {
   }
 }
 
+// Get Event Items by Event ID
+async function getEventItemsById(req, res) {
+  try {
+    const { eventId } = req.params;
+
+    const result = await itemsUsageService.getEventItemsById(eventId);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.error("Error retrieving event items:", error);
+    return res.status(500).json({
+      error: true,
+      payload: "Internal server error",
+    });
+  }
+}
+
 //Release Event Items
 async function releaseEventItems(req, res) {
   try {
@@ -100,18 +127,9 @@ async function getReturnItemList(req, res) {
         payload: result.payload,
       });
     } else {
-      const payload = result.payload.map((eventItem) => ({
-        code: eventItem.items.code,
-        itemName: eventItem.items.itemName,
-        type: eventItem.items.type,
-        quantity: eventItem.quantity,
-        returned: eventItem.returned,
-        damaged: eventItem.damaged,
-        missing: eventItem.missing,
-      }));
       return res.status(result.status).json({
         error: false,
-        payload: payload,
+        payload: result.payload,
       });
     }
   } catch (error) {
@@ -125,6 +143,7 @@ async function getReturnItemList(req, res) {
 
 module.exports = {
   addEventItems,
+  getEventItemsById,
   releaseEventItems,
   returnEventItems,
   getReturnItemList,
