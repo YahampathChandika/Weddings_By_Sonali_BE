@@ -26,7 +26,7 @@ async function addEventItems(data) {
         };
       }
 
-      const existingUsage = await ItemsUsage.findOne({
+      let existingUsage = await ItemsUsage.findOne({
         where: {
           eventId: eventId,
           itemId: itemData.itemId,
@@ -36,6 +36,8 @@ async function addEventItems(data) {
       if (existingUsage) {
         const updatedAvailableUnits =
           item.availableunits + existingUsage.quantity - itemData.quantity;
+
+          console.log("updatedAvailableUnits", updatedAvailableUnits);
 
         if (updatedAvailableUnits < 0) {
           return {
@@ -65,8 +67,8 @@ async function addEventItems(data) {
         await item.save();
 
         await ItemsUsage.create({
-          eventID: eventId,
-          itemID: itemData.itemId,
+          eventId: eventId,
+          itemId: itemData.itemId,
           quantity: itemData.quantity,
           isSelect: "0",
         });
