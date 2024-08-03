@@ -37,34 +37,62 @@ async function createItem(item) {
 }
 
 // Get All Items
+// async function getAllItems() {
+//   try {
+//     const items = await Items.findAll();
+
+//     const itemsUsage = await ItemsUsage.findAll();
+
+//     const usedQuantitiesMap = {};
+//     itemsUsage.forEach((usage) => {
+//       const itemId = usage.itemID;
+//       const usedQuantity = parseInt(usage.quantity) || 0;
+//       if (usedQuantitiesMap[itemId]) {
+//         usedQuantitiesMap[itemId] += usedQuantity;
+//       } else {
+//         usedQuantitiesMap[itemId] = usedQuantity;
+//       }
+//     });
+
+//     items.forEach((item) => {
+//       const itemId = item.id;
+//       const totalUsedQuantity = usedQuantitiesMap[itemId] || 0;
+//       item.availableunits = (parseInt(item.quantity) || 0) - totalUsedQuantity;
+//     });
+
+//     return {
+//       error: false,
+//       status: 200,
+//       payload: items,
+//     };
+//   } catch (error) {
+//     console.error("Error getting items service:", error);
+
+//     return {
+//       error: true,
+//       status: 500,
+//       payload: "Internal server error.",
+//     };
+//   }
+// }
+
 async function getAllItems() {
   try {
     const items = await Items.findAll();
 
-    const itemsUsage = await ItemsUsage.findAll();
-
-    const usedQuantitiesMap = {};
-    itemsUsage.forEach((usage) => {
-      const itemId = usage.itemID;
-      const usedQuantity = parseInt(usage.quantity) || 0;
-      if (usedQuantitiesMap[itemId]) {
-        usedQuantitiesMap[itemId] += usedQuantity;
-      } else {
-        usedQuantitiesMap[itemId] = usedQuantity;
-      }
-    });
-
-    items.forEach((item) => {
-      const itemId = item.id;
-      const totalUsedQuantity = usedQuantitiesMap[itemId] || 0;
-      item.availableunits = (parseInt(item.quantity) || 0) - totalUsedQuantity;
-    });
-
-    return {
-      error: false,
-      status: 200,
-      payload: items,
-    };
+    if (!items) {
+      return {
+        error: true,
+        status: 404,
+        payload: "No items available!",
+      };
+    } else {
+      return {
+        error: false,
+        status: 200,
+        payload: items,
+      };
+    }
   } catch (error) {
     console.error("Error getting items service:", error);
 
@@ -117,7 +145,7 @@ async function deleteItems(id) {
       };
     } else {
       await ItemsUsage.destroy({
-        where: { itemID: id }
+        where: { itemID: id },
       });
       await item.destroy();
       return {
@@ -166,7 +194,8 @@ async function updateItems(id, updatedData) {
         });
 
         const totalUsedQuantity = usedQuantitiesMap[id] || 0;
-        updatedData.availableunits = (parseInt(updatedData.quantity) || 0) - totalUsedQuantity;
+        updatedData.availableunits =
+          (parseInt(updatedData.quantity) || 0) - totalUsedQuantity;
       }
 
       await Items.update(updatedData, {

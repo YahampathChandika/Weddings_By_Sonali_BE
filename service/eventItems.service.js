@@ -17,6 +17,7 @@ async function addEventItems(data) {
 
     for (let itemData of items) {
       const item = await Items.findByPk(itemData.itemId);
+      console.log("itemData", item)
 
       if (!item) {
         return {
@@ -43,7 +44,7 @@ async function addEventItems(data) {
           return {
             error: true,
             status: 400,
-            payload: `Insufficient available units for item with ID ${itemData.itemId}.`,
+            payload: `Insufficient available units for item with code ${item.code}.`,
           };
         }
 
@@ -59,7 +60,7 @@ async function addEventItems(data) {
           return {
             error: true,
             status: 400,
-            payload: `Insufficient available units for item with ID ${itemData.itemId}.`,
+            payload: `Insufficient available units for item with code ${item.code}.`,
           };
         }
 
