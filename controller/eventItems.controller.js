@@ -1,4 +1,4 @@
-const itemsUsageService = require("../service/YitemUsage.service");
+const itemsUsageService = require("../service/eventItems.service");
 
 // Add Event Items
 async function addEventItems(req, res) {

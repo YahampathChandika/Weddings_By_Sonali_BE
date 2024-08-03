@@ -1,17 +1,17 @@
 const express = require("express");
-const YitemUsage = require("../controller/YitemUsage.controller");
+const eventItems = require("../controller/eventItems.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
-function yItemUsageRoutes() {
+function eventItemsRoutes() {
   const router = express.Router();
 
   router.use(express.json());
   router.use(authMiddleware);
 
-  router.post("/addEventItems", YitemUsage.addEventItems);
-  router.post("/releaseEventItems", YitemUsage.releaseEventItems);
-  router.post("/returnEventItems", YitemUsage.returnEventItems);
-  router.get("/getReturnItemList/:eventId", YitemUsage.getReturnItemList);
+  router.post("/addEventItems", eventItems.addEventItems);
+  router.post("/releaseEventItems", eventItems.releaseEventItems);
+  router.post("/returnEventItems", eventItems.returnEventItems);
+  router.get("/getReturnItemList/:eventId", eventItems.getReturnItemList);
 //   router.get("/getAllUsers", YitemUsage.getAllUsers);
 //   router.get("/getUserById/:id", YitemUsage.getUserById);
 //   router.patch("/updateUser/:id", YitemUsage.updateUser);
@@ -20,4 +20,4 @@ function yItemUsageRoutes() {
   return router;
 }
 
-module.exports = yItemUsageRoutes();
+module.exports = eventItemsRoutes();

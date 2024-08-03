@@ -6,7 +6,7 @@ const itemUsageRoutes = require("./itemUsage.routes");
 const customerRoutes = require("./customer.routes");
 // const eventRoutes = require("./event.routes")
 const orderRoutes = require("./order.routes");
-const YitemUsageRoutes = require("./YitemUsage.routes");
+const eventItemsRoutes = require("./eventItems.routes");
 function routes() {
   const router = express.Router();
 
@@ -14,7 +14,7 @@ function routes() {
   router.use("/item", itemRoutes);
   router.use("/customer", customerRoutes);
   router.use("/itemUsage", itemUsageRoutes);
-  router.use("/eventItems", YitemUsageRoutes);
+  router.use("/eventItems", eventItemsRoutes);
   // router.use("/event", eventRoutes);
   router.use("/order", orderRoutes);
 
