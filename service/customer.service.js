@@ -1,25 +1,11 @@
 const { Customers, Roles } = require("../models");
 
 //Register Customer
-async function registerCustomer(name, email, contactNo, address) {
+async function registerCustomer(name, nic, contactNo, address) {
   try {
-    const emailExist = await Customers.findOne({
-      where: {
-        email: email,
-      },
-    });
-
-    if (emailExist) {
-      return {
-        error: true,
-        status: 409,
-        payload: "Sorry, that email already exists!",
-      };
-    }
-
     const customer = await Customers.create({
       name: name,
-      email: email,
+      nic: nic,
       contactNo: contactNo,
       address: address,
     });

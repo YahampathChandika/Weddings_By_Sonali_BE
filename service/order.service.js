@@ -6,7 +6,7 @@ async function createNewOrder(orderDetails) {
   try {
     const {
       name,
-      email,
+      nic,
       contactNo,
       address,
       eventName,
@@ -21,7 +21,7 @@ async function createNewOrder(orderDetails) {
     // Create a customer
     const createdCustomer = await Customers.create({
       name,
-      email,
+      nic,
       contactNo,
       address,
     });

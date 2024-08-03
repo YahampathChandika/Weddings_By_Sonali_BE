@@ -4,7 +4,7 @@ const customerService = require("../service/customer.service");
 async function registerCustomer(req, res) {
   try {
     const userRole_id = req.user.roleId;
-    const { name, email, contactNo, address } = req.body;
+    const { name, nic, contactNo, address } = req.body;
 
     if (![1].includes(userRole_id)) {
       return res.status(403).json({
@@ -13,7 +13,7 @@ async function registerCustomer(req, res) {
       });
     }
 
-    if (!(name && email && contactNo && address)) {
+    if (!(name && nic && contactNo && address)) {
       return res.status(400).json({
         error: true,
         payload: "All fields are required.",
@@ -22,7 +22,7 @@ async function registerCustomer(req, res) {
 
     const result = await customerService.registerCustomer(
       name,
-      email,
+      nic,
       contactNo,
       address
     );
