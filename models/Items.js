@@ -31,7 +31,11 @@ module.exports = (sequelize, DataTypes) => {
     availableunits: {
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
+    wash: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
 
   });
   return Items;
