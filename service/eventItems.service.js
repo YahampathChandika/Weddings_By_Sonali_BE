@@ -1,4 +1,5 @@
-const { where } = require("sequelize");
+const { where, Op } = require("sequelize");
+
 const { ItemsUsage, Items, Events, Customers } = require("../models");
 
 // Add Event Items
@@ -129,6 +130,14 @@ async function getEventItemsById(eventId) {
         {
           model: ItemsUsage,
           as: "itemsUsage",
+          attributes: [
+            "quantity",
+            "returned",
+            "damaged",
+            "missing",
+            "itemId",
+            "isSelect",
+          ],
           include: [
             {
               model: Items,
@@ -142,7 +151,6 @@ async function getEventItemsById(eventId) {
               ],
             },
           ],
-          attributes: ["quantity", "returned", "damaged", "missing", "itemId"],
         },
       ],
     });
@@ -166,6 +174,80 @@ async function getEventItemsById(eventId) {
       damaged: usage.damaged,
       missing: usage.missing,
       itemId: usage.itemId,
+      isSelect: usage.isSelect,
+    }));
+
+    return {
+      error: false,
+      status: 200,
+      payload: itemsDetails,
+    };
+  } catch (error) {
+    console.error("Error within getEventItemsById:", error);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
+
+//Get Release Item List
+async function getReleaseItemList(eventId) {
+  try {
+    const event = await Events.findByPk(eventId, {
+      include: [
+        {
+          model: ItemsUsage,
+          as: "itemsUsage",
+          where: {
+            isSelect: false,
+          },
+          attributes: [
+            "quantity",
+            "returned",
+            "damaged",
+            "missing",
+            "itemId",
+            "isSelect",
+          ],
+          include: [
+            {
+              model: Items,
+              as: "items",
+              attributes: [
+                "code",
+                "itemName",
+                "type",
+                "usedTimes",
+                "availableunits",
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!event) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Event not found!",
+      };
+    }
+
+    const itemsDetails = event.itemsUsage.map((usage) => ({
+      code: usage.items.code,
+      name: usage.items.itemName,
+      type: usage.items.type,
+      usage: usage.items.usedTimes,
+      available: usage.items.availableunits,
+      quantity: usage.quantity,
+      returned: usage.returned,
+      damaged: usage.damaged,
+      missing: usage.missing,
+      itemId: usage.itemId,
+      isSelect: usage.isSelect,
     }));
 
     return {
@@ -206,8 +288,8 @@ async function releaseEventItems(eventId, items) {
 
       const eventItem = await ItemsUsage.findOne({
         where: {
-          itemID: itemId,
-          eventID: eventId,
+          itemId: itemId,
+          eventId: eventId,
         },
       });
 
@@ -271,8 +353,14 @@ async function returnEventItems(eventId, items) {
       const { itemId, returned, damaged } = itemData;
       const eventItem = await ItemsUsage.findOne({
         where: {
-          itemID: itemId,
-          eventID: eventId,
+          itemId: itemId,
+          eventId: eventId,
+        },
+      });
+
+      const itemName = await Items.findOne({
+        where: {
+          id: itemId,
         },
       });
 
@@ -288,7 +376,7 @@ async function returnEventItems(eventId, items) {
         return {
           error: true,
           status: 400,
-          payload: `Item with ID ${itemId} has only ${eventItem.quantity} units available for return.`,
+          payload: `Item ${itemName.itemName} has only ${eventItem.quantity} units available for return.`,
         };
       }
 
@@ -348,13 +436,14 @@ async function getReturnItemList(eventId) {
       where: {
         eventId: eventId,
         isSelect: true,
+        returned: { [Op.eq]: null },
       },
       attributes: ["itemId", "quantity", "returned", "damaged", "missing"],
       include: [
         {
           model: Items,
           as: "items",
-          attributes: ["code", "itemName", "type"],
+          attributes: ["code", "itemName", "type", "wash"],
         },
       ],
     });
@@ -368,23 +457,103 @@ async function getReturnItemList(eventId) {
       returned: eventItem.returned,
       damaged: eventItem.damaged,
       missing: eventItem.missing,
+      wash: eventItem.items.wash,
     }));
 
-    if (eventItems.length === 0) {
+    // if (eventItems.length === 0) {
+    //   return {
+    //     error: true,
+    //     status: 400,
+    //     payload: "No items selected for release.",
+    //   };
+    // } else {
+    //   return {
+    //     error: false,
+    //     status: 200,
+    //     payload: formattedItems,
+    //   };
+    // }
+
+    return {
+      error: false,
+      status: 200,
+      payload: formattedItems,
+    };
+  } catch (e) {
+    console.error("Error getting return item list: ", e);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
+
+//Get washing items list
+async function getWahingItemsList(eventId) {
+  try {
+    const event = await Events.findByPk(eventId, {
+      include: [
+        {
+          model: ItemsUsage,
+          as: "itemsUsage",
+          attributes: [
+            "quantity",
+            "returned",
+            "damaged",
+            "missing",
+            "itemId",
+            "isSelect",
+          ],
+          include: [
+            {
+              model: Items,
+              as: "items",
+              where: {
+                wash: true,
+              },
+              attributes: [
+                "code",
+                "itemName",
+                "type",
+                "usedTimes",
+                "availableunits",
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!event) {
       return {
         error: true,
         status: 404,
-        payload: "No items selected for release.",
-      };
-    } else {
-      return {
-        error: false,
-        status: 200,
-        payload: formattedItems,
+        payload: "Event not found!",
       };
     }
-  } catch (e) {
-    console.error("Error getting return item list: ", e);
+
+    const itemsDetails = event.itemsUsage.map((usage) => ({
+      code: usage.items.code,
+      name: usage.items.itemName,
+      type: usage.items.type,
+      usage: usage.items.usedTimes,
+      available: usage.items.availableunits,
+      quantity: usage.quantity,
+      returned: usage.returned,
+      damaged: usage.damaged,
+      missing: usage.missing,
+      itemId: usage.itemId,
+      isSelect: usage.isSelect,
+    }));
+
+    return {
+      error: false,
+      status: 200,
+      payload: itemsDetails,
+    };
+  } catch (error) {
+    console.error("Error within getEventItemsById:", error);
     return {
       error: true,
       status: 500,
@@ -396,7 +565,9 @@ async function getReturnItemList(eventId) {
 module.exports = {
   addEventItems,
   getEventItemsById,
+  getReleaseItemList,
   releaseEventItems,
   returnEventItems,
   getReturnItemList,
+  getWahingItemsList,
 };

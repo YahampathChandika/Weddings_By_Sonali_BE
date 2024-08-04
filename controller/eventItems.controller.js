@@ -61,6 +61,33 @@ async function getEventItemsById(req, res) {
   }
 }
 
+// Get Release Items List
+async function getReleaseItemList(req, res) {
+  try {
+    const { eventId } = req.params;
+
+    const result = await itemsUsageService.getReleaseItemList(eventId);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.error("Error retrieving event items:", error);
+    return res.status(500).json({
+      error: true,
+      payload: "Internal server error",
+    });
+  }
+}
+
 //Release Event Items
 async function releaseEventItems(req, res) {
   try {
@@ -147,4 +174,5 @@ module.exports = {
   releaseEventItems,
   returnEventItems,
   getReturnItemList,
+  getReleaseItemList,
 };
