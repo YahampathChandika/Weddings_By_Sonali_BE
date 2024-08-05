@@ -30,7 +30,6 @@ async function addEventItems(data) {
     // Process each item in the new items list
     for (let itemData of items) {
       const item = await Items.findByPk(itemData.itemId);
-      console.log("itemData", item);
 
       if (!item) {
         return {
@@ -192,10 +191,10 @@ async function getEventItemsById(eventId) {
   }
 }
 
-//Get Release Item List
+// Get Release Item List
 async function getReleaseItemList(eventId) {
   try {
-    const event = await Events.findByPk(eventId, {
+    const eventData = await Events.findByPk(eventId, {
       include: [
         {
           model: ItemsUsage,
@@ -228,15 +227,22 @@ async function getReleaseItemList(eventId) {
       ],
     });
 
-    if (!event) {
+    if (!eventData || eventData.itemsUsage.length === 0) {
+      // Check if the event state is 2 and update it to 3 if there are no items
+      const event = await Events.findByPk(eventId);
+      if (event.state === "2") {
+        event.state = "3";
+        await event.save();
+      }
+
       return {
-        error: true,
-        status: 404,
-        payload: "Event not found!",
+        error: false,
+        status: 200,
+        payload: [],
       };
     }
 
-    const itemsDetails = event.itemsUsage.map((usage) => ({
+    const itemsDetails = eventData.itemsUsage.map((usage) => ({
       code: usage.items.code,
       name: usage.items.itemName,
       type: usage.items.type,
@@ -265,7 +271,7 @@ async function getReleaseItemList(eventId) {
   }
 }
 
-//Release Event Items
+// Release Event Items
 async function releaseEventItems(eventId, items) {
   try {
     let selectedItemsCount = 0;
@@ -308,109 +314,33 @@ async function releaseEventItems(eventId, items) {
     const event = await Events.findByPk(eventId);
 
     if (selectedItemsCount === 0) {
-      event.state = "2";
-      await event.save();
-
       return {
         error: true,
         status: 400,
         payload: "No items selected for release.",
       };
-    } else {
+    }
+
+    // Check if all items are released and update the event state to 3 if so
+    const remainingItems = await ItemsUsage.count({
+      where: {
+        eventId: eventId,
+        isSelect: true,
+      },
+    });
+
+    if (remainingItems === 0) {
       event.state = "3";
       await event.save();
-
-      return {
-        error: false,
-        status: 200,
-        payload: "Event Items Released Successfully",
-      };
-    }
-  } catch (e) {
-    console.error("Error within releaseEventItems:", e);
-    return {
-      error: true,
-      status: 500,
-      payload: "Internal server error.",
-    };
-  }
-}
-
-//Return Event Items
-async function returnEventItems(eventId, items) {
-  try {
-    const event = await Events.findByPk(eventId);
-
-    if (!event) {
-      return {
-        error: true,
-        status: 404,
-        payload: "Event not found!",
-      };
-    }
-
-    for (itemData of items) {
-      const { itemId, returned, damaged } = itemData;
-      const eventItem = await ItemsUsage.findOne({
-        where: {
-          itemId: itemId,
-          eventId: eventId,
-        },
-      });
-
-      const itemName = await Items.findOne({
-        where: {
-          id: itemId,
-        },
-      });
-
-      if (!eventItem) {
-        return {
-          error: true,
-          status: 404,
-          payload: `No usage found for item with ID ${itemId}.`,
-        };
-      }
-
-      if (eventItem.quantity < returned + damaged) {
-        return {
-          error: true,
-          status: 400,
-          payload: `Item ${itemName.itemName} has only ${eventItem.quantity} units available for return.`,
-        };
-      }
-
-      const missing = eventItem.quantity - returned;
-
-      eventItem.returned = returned;
-      eventItem.damaged = damaged;
-      eventItem.missing = missing;
-      await eventItem.save();
-
-      const item = await Items.findByPk(itemId);
-
-      if (!item) {
-        return {
-          error: true,
-          status: 404,
-          payload: `Item with ID ${itemId} not found.`,
-        };
-      }
-
-      item.availableunits += returned;
-      item.damaged += damaged;
-      item.missing += missing;
-      item.usedTimes++;
-      await item.save();
     }
 
     return {
       error: false,
       status: 200,
-      payload: "Event Items Returned Successfully",
+      payload: "Event Items Released Successfully",
     };
-  } catch (error) {
-    console.log("Error creating ItemsUsage controller: ", error);
+  } catch (e) {
+    console.error("Error within releaseEventItems:", e);
     return {
       error: true,
       status: 500,
@@ -481,6 +411,83 @@ async function getReturnItemList(eventId) {
     };
   } catch (e) {
     console.error("Error getting return item list: ", e);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
+
+//Return Event Items
+async function returnEventItems(eventId, items) {
+  try {
+    const event = await Events.findByPk(eventId);
+
+    if (!event) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Event not found!",
+      };
+    }
+
+    for (itemData of items) {
+      const { itemId, returned, damaged } = itemData;
+      const eventItem = await ItemsUsage.findOne({
+        where: {
+          itemId: itemId,
+          eventId: eventId,
+        },
+      });
+
+      if (!eventItem) {
+        return {
+          error: true,
+          status: 404,
+          payload: `No usage found for item with ID ${itemId}.`,
+        };
+      }
+
+      const item = await Items.findByPk(itemId);
+
+      if (!item) {
+        return {
+          error: true,
+          status: 404,
+          payload: `Item with ID ${itemId} not found.`,
+        };
+      }
+
+      if (eventItem.quantity < returned + damaged) {
+        return {
+          error: true,
+          status: 400,
+          payload: `Item ${item.itemName} has only ${eventItem.quantity} units available for return.`,
+        };
+      }
+
+      const missing = eventItem.quantity - returned;
+
+      eventItem.returned = returned;
+      eventItem.damaged = damaged;
+      eventItem.missing = missing;
+      await eventItem.save();
+
+      item.availableunits += returned;
+      item.damaged += damaged;
+      item.missing += missing;
+      item.usedTimes++;
+      await item.save();
+    }
+
+    return {
+      error: false,
+      status: 200,
+      payload: "Event Items Returned Successfully",
+    };
+  } catch (error) {
+    console.log("Error creating ItemsUsage controller: ", error);
     return {
       error: true,
       status: 500,
