@@ -168,6 +168,58 @@ async function getReturnItemList(req, res) {
   }
 }
 
+// Get Wash List Controller
+async function getWashList(req, res) {
+  try {
+    const { eventId } = req.params;
+    const result = await itemsUsageService.getWashList(eventId);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (err) {
+    console.error("Error Getting Wash List Controller: ", err);
+    return res.status(500).json({
+      error: true,
+      payload: "Internal server error.",
+    });
+  }
+}
+
+// Mark Items As Washed Controller
+async function markItemsAsWashed(req, res) {
+  try {
+    const items = req.body.items;
+    const result = await itemsUsageService.markItemsAsWashed(items);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (err) {
+    console.error("Error Marking Items As Washed Controller: ", err);
+    return res.status(500).json({
+      error: true,
+      payload: "Internal server error.",
+    });
+  }
+}
+
 module.exports = {
   addEventItems,
   getEventItemsById,
@@ -175,4 +227,6 @@ module.exports = {
   returnEventItems,
   getReturnItemList,
   getReleaseItemList,
+  getWashList,
+  markItemsAsWashed,
 };

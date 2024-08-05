@@ -80,6 +80,8 @@ async function addEventItems(data) {
           itemId: itemData.itemId,
           quantity: itemData.quantity,
           isSelect: "0",
+          needsWash: item.wash === "1",
+          isWashed: false,
         });
       }
     }
@@ -411,7 +413,6 @@ async function getReturnItemList(eventId) {
   }
 }
 
-
 // Return Event Items
 async function returnEventItems(eventId, items) {
   try {
@@ -465,12 +466,17 @@ async function returnEventItems(eventId, items) {
       eventItem.returned = returned;
       eventItem.damaged = damaged;
       eventItem.missing = missing;
-      await eventItem.save();
 
-      item.availableunits += returned;
+      if (eventItem.needsWash) {
+        eventItem.isWashed = false;
+      } else {
+        item.availableunits += returned;
+      }
+
       item.damaged += damaged;
       item.missing += missing;
       item.usedTimes++;
+      await eventItem.save();
       await item.save();
     }
 
@@ -502,72 +508,113 @@ async function returnEventItems(eventId, items) {
   }
 }
 
-
-//Get washing items list
-async function getWahingItemsList(eventId) {
+// Get Wash List
+async function getWashList() {
   try {
-    const event = await Events.findByPk(eventId, {
+    const washList = await ItemsUsage.findAll({
+      where: {
+        needsWash: true,
+        isWashed: false,
+      },
+      attributes: [
+        "itemId",
+        "eventId",
+        "quantity",
+        "returned",
+        "damaged",
+        "missing",
+        "id",
+      ],
       include: [
         {
-          model: ItemsUsage,
-          as: "itemsUsage",
-          attributes: [
-            "quantity",
-            "returned",
-            "damaged",
-            "missing",
-            "itemId",
-            "isSelect",
-          ],
-          include: [
-            {
-              model: Items,
-              as: "items",
-              where: {
-                wash: true,
-              },
-              attributes: [
-                "code",
-                "itemName",
-                "type",
-                "usedTimes",
-                "availableunits",
-              ],
-            },
-          ],
+          model: Items,
+          as: "items",
+          attributes: ["code", "itemName", "type"],
+        },
+        {
+          model: Events,
+          as: "events",
+          attributes: ["eventName", "eventDate"],
         },
       ],
     });
 
-    if (!event) {
-      return {
-        error: true,
-        status: 404,
-        payload: "Event not found!",
-      };
-    }
-
-    const itemsDetails = event.itemsUsage.map((usage) => ({
-      code: usage.items.code,
-      name: usage.items.itemName,
-      type: usage.items.type,
-      usage: usage.items.usedTimes,
-      available: usage.items.availableunits,
-      quantity: usage.quantity,
-      returned: usage.returned,
-      damaged: usage.damaged,
-      missing: usage.missing,
-      itemId: usage.itemId,
-      isSelect: usage.isSelect,
+    const formattedWashList = washList.map((washItem) => ({
+      id: washItem.id,
+      eventId:washItem.eventId,
+      itemId: washItem.itemId,
+      code: washItem.items.code,
+      itemName: washItem.items.itemName,
+      type: washItem.items.type,
+      quantity: washItem.quantity,
+      returned: washItem.returned,
+      damaged: washItem.damaged,
+      missing: washItem.missing,
+      eventName: washItem.events.eventName,
+      eventDate: washItem.events.eventDate,
     }));
 
     return {
       error: false,
       status: 200,
-      payload: itemsDetails,
+      payload: formattedWashList,
+    };
+  } catch (e) {
+    console.error("Error getting wash list: ", e);
+    return {
+      error: true,
+      status: 500,
+      payload: "Internal server error.",
+    };
+  }
+}
+
+// Mark Items As Washed
+async function markItemsAsWashed(items) {
+  try {
+    for (let itemData of items) {
+      const { itemId, eventId } = itemData;
+      const eventItem = await ItemsUsage.findOne({
+        where: {
+          itemId: itemId,
+          eventId: eventId,
+        },
+      });
+
+      if (!eventItem) {
+        return {
+          error: true,
+          status: 404,
+          payload: `No usage found for item with ID ${itemId} and Event ID ${eventId}.`,
+        };
+      }
+
+      const item = await Items.findByPk(itemId);
+
+      if (!item) {
+        return {
+          error: true,
+          status: 404,
+          payload: `Item with ID ${itemId} not found.`,
+        };
+      }
+
+      // Update the item as washed
+      eventItem.isWashed = true;
+      await eventItem.save();
+
+      // Update the available units in the inventory
+      item.availableunits += (eventItem.returned - eventItem.damaged);
+      await item.save();
+    }
+
+    return {
+      error: false,
+      status: 200,
+      payload: "Items marked as washed and returned to inventory successfully",
     };
   } catch (error) {
-    console.error("Error within getEventItemsById:", error);
+    console.error("Error marking items as washed:", error);
     return {
       error: true,
       status: 500,
@@ -583,5 +630,6 @@ module.exports = {
   releaseEventItems,
   returnEventItems,
   getReturnItemList,
-  getWahingItemsList,
+  getWashList,
+  markItemsAsWashed,
 };
