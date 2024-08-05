@@ -125,7 +125,6 @@ async function getOrderMatrices(req, res) {
 
       console.log("Order transformedPayload", transformedPayload);
 
-
       return res.status(result.status).json({
         error: false,
         payload: transformedPayload,
@@ -139,7 +138,6 @@ async function getOrderMatrices(req, res) {
     });
   }
 }
-
 
 module.exports = {
   createOrder,
