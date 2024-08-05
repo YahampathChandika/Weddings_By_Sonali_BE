@@ -390,19 +390,11 @@ async function getReturnItemList(eventId) {
       wash: eventItem.items.wash,
     }));
 
-    // if (eventItems.length === 0) {
-    //   return {
-    //     error: true,
-    //     status: 400,
-    //     payload: "No items selected for release.",
-    //   };
-    // } else {
-    //   return {
-    //     error: false,
-    //     status: 200,
-    //     payload: formattedItems,
-    //   };
-    // }
+    // If no items are pending return, check the event state
+    if (formattedItems.length === 0 && event.state === "3") {
+      event.state = "4";
+      await event.save();
+    }
 
     return {
       error: false,
@@ -419,7 +411,8 @@ async function getReturnItemList(eventId) {
   }
 }
 
-//Return Event Items
+
+// Return Event Items
 async function returnEventItems(eventId, items) {
   try {
     const event = await Events.findByPk(eventId);
@@ -432,7 +425,7 @@ async function returnEventItems(eventId, items) {
       };
     }
 
-    for (itemData of items) {
+    for (let itemData of items) {
       const { itemId, returned, damaged } = itemData;
       const eventItem = await ItemsUsage.findOne({
         where: {
@@ -467,7 +460,7 @@ async function returnEventItems(eventId, items) {
         };
       }
 
-      const missing = eventItem.quantity - returned;
+      const missing = eventItem.quantity - returned - damaged;
 
       eventItem.returned = returned;
       eventItem.damaged = damaged;
@@ -479,6 +472,19 @@ async function returnEventItems(eventId, items) {
       item.missing += missing;
       item.usedTimes++;
       await item.save();
+    }
+
+    // Check if all items are returned
+    const remainingItems = await ItemsUsage.count({
+      where: {
+        eventId: eventId,
+        returned: { [Op.eq]: null },
+      },
+    });
+
+    if (remainingItems === 0 && event.state === "3") {
+      event.state = "4";
+      await event.save();
     }
 
     return {
@@ -495,6 +501,7 @@ async function returnEventItems(eventId, items) {
     };
   }
 }
+
 
 //Get washing items list
 async function getWahingItemsList(eventId) {

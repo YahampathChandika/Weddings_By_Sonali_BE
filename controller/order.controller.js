@@ -78,7 +78,7 @@ async function getOrderById(req, res) {
     });
   }
 }
-  
+
 //Get Orders by State
 async function getOrdersByState(req, res) {
   try {
@@ -109,15 +109,26 @@ async function getOrderMatrices(req, res) {
   try {
     const result = await orderService.getOrderMatrices();
 
+    console.log("Order Mat", result);
+
     if (result.error) {
       return res.status(result.status).json({
         error: true,
         payload: result.payload,
       });
     } else {
+      // Transform the payload into the desired format
+      const transformedPayload = result.payload.reduce((acc, curr) => {
+        acc[curr.stateName] = curr.eventCount;
+        return acc;
+      }, {});
+
+      console.log("Order transformedPayload", transformedPayload);
+
+
       return res.status(result.status).json({
         error: false,
-        payload: result.payload,
+        payload: transformedPayload,
       });
     }
   } catch (err) {
@@ -128,6 +139,7 @@ async function getOrderMatrices(req, res) {
     });
   }
 }
+
 
 module.exports = {
   createOrder,
