@@ -327,9 +327,11 @@ async function releaseEventItems(eventId, items) {
     const remainingItems = await ItemsUsage.count({
       where: {
         eventId: eventId,
-        isSelect: true,
+        isSelect: false,
       },
     });
+
+    console.log("remainingItems", remainingItems)
 
     if (remainingItems === 0) {
       event.state = "3";
@@ -368,7 +370,7 @@ async function getReturnItemList(eventId) {
       where: {
         eventId: eventId,
         isSelect: true,
-        returned: { [Op.eq]: null },
+        // returned: { [Op.eq]: null },
       },
       attributes: ["itemId", "quantity", "returned", "damaged", "missing"],
       include: [
