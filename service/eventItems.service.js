@@ -541,7 +541,7 @@ async function getWashList() {
 
     const formattedWashList = washList.map((washItem) => ({
       id: washItem.id,
-      eventId:washItem.eventId,
+      eventId: washItem.eventId,
       itemId: washItem.itemId,
       code: washItem.items.code,
       itemName: washItem.items.itemName,
@@ -604,7 +604,7 @@ async function markItemsAsWashed(items) {
       await eventItem.save();
 
       // Update the available units in the inventory
-      item.availableunits += (eventItem.returned - eventItem.damaged);
+      item.availableunits += eventItem.returned - eventItem.damaged;
       await item.save();
     }
 
