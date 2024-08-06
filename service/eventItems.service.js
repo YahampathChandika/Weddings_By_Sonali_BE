@@ -331,7 +331,7 @@ async function releaseEventItems(eventId, items) {
       },
     });
 
-    console.log("remainingItems", remainingItems)
+    console.log("remainingItems", remainingItems);
 
     if (remainingItems === 0) {
       event.state = "3";
@@ -606,7 +606,7 @@ async function markItemsAsWashed(items) {
       await eventItem.save();
 
       // Update the available units in the inventory
-      item.availableunits += eventItem.returned - eventItem.damaged;
+      item.availableunits += eventItem.returned;
       await item.save();
     }
 

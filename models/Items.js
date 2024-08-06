@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    damage: {
+    damaged: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
@@ -36,7 +36,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-
   });
   return Items;
 };
