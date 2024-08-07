@@ -53,10 +53,10 @@ async function addEventItems(data) {
           };
         }
 
-        item.availableunits = updatedAvailableUnits;
+        // item.availableunits = updatedAvailableUnits;
         existingUsage.quantity = itemData.quantity;
 
-        await item.save();
+        // await item.save();
         await existingUsage.save();
 
         // Remove processed item from the map
@@ -72,15 +72,15 @@ async function addEventItems(data) {
           };
         }
 
-        item.availableunits = updatedAvailableUnits;
-        await item.save();
+        // item.availableunits = updatedAvailableUnits;
+        // await item.save();
 
         await ItemsUsage.create({
           eventId: eventId,
           itemId: itemData.itemId,
           quantity: itemData.quantity,
           isSelect: "0",
-          needsWash: item.wash === "1",
+          // needsWash: item.wash === "1",
           isWashed: false,
         });
       }
@@ -90,10 +90,10 @@ async function addEventItems(data) {
     for (let [itemId, existingUsage] of existingUsagesMap) {
       const item = await Items.findByPk(itemId);
 
-      if (item) {
-        item.availableunits += existingUsage.quantity;
-        await item.save();
-      }
+      // if (item) {
+      //   item.availableunits += existingUsage.quantity;
+      //   await item.save();
+      // }
 
       await ItemsUsage.destroy({
         where: {
@@ -310,7 +310,9 @@ async function releaseEventItems(eventId, items) {
       }
 
       eventItem.isSelect = isSelect;
+      item.availableunits -= eventItem.quantity;
       await eventItem.save();
+      await item.save();
     }
 
     const event = await Events.findByPk(eventId);
@@ -330,8 +332,6 @@ async function releaseEventItems(eventId, items) {
         isSelect: false,
       },
     });
-
-    console.log("remainingItems", remainingItems);
 
     if (remainingItems === 0) {
       event.state = "3";
@@ -469,14 +469,15 @@ async function returnEventItems(eventId, items) {
       eventItem.damaged = damaged;
       eventItem.missing = missing;
 
-      if (eventItem.needsWash) {
-        eventItem.isWashed = false;
+      if (item.wash === "1") {
+        (eventItem.needsWash = true), (eventItem.isWashed = false);
       } else {
         item.availableunits += returned;
       }
 
       item.damaged += damaged;
       item.missing += missing;
+      item.quantity -= damaged + missing;
       item.usedTimes++;
       await eventItem.save();
       await item.save();
