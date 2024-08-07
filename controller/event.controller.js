@@ -31,8 +31,6 @@ async function registerEvent(req, res) {
       return res.status(result.status).json({
         error: false,
         payload: result.payload,
-        
-        
       });
     }
   } catch (error) {
@@ -44,9 +42,6 @@ async function registerEvent(req, res) {
   }
 }
 
-
-
 module.exports = {
-    registerEvent,
-  };
-  
+  registerEvent,
+};

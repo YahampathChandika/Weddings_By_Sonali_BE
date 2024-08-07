@@ -13,7 +13,8 @@ function orderRoutes() {
   router.get("/getOrderById/:id", orderController.getOrderById);
   router.get("/getOrdersByState/:state", orderController.getOrdersByState);
   router.get('/getOrderMatrices', orderController.getOrderMatrices);
-//   router.delete("/deleteItem/:id", createItemsUsageController.deleteItems);
+  router.delete('/deleteOrder/:orderId', orderController.deleteOrder);
+
 //   router.patch("/updateItem/:id", createItemsUsageController.updateItem);
 
   return router;

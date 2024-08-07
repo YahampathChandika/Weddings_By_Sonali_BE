@@ -139,10 +139,39 @@ async function getOrderMatrices(req, res) {
   }
 }
 
+// Delete Order Controller
+const deleteOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    console.log("Order deleted", orderId);
+
+    const result = await orderService.deleteOrder(orderId);
+
+    if (result.error) {
+      return res.status(result.status).json({
+        error: true,
+        payload: result.payload,
+      });
+    } else {
+      return res.status(result.status).json({
+        error: false,
+        payload: result.payload,
+      });
+    }
+  } catch (error) {
+    console.log("Error deleting order: ", error);
+    return res.status(500).json({
+      error: true,
+      payload: error.message,
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getAllOrders,
   getOrderById,
   getOrdersByState,
   getOrderMatrices,
+  deleteOrder,
 };

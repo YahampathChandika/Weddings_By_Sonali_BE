@@ -136,9 +136,9 @@ async function getOrdersByState(state) {
     });
     if (!orders || orders.length === 0) {
       return {
-        error: true,
-        status: 404,
-        payload: "No orders found!",
+        error: false,
+        status: 200,
+        payload: [],
       };
     } else {
       return {
@@ -199,10 +199,60 @@ async function getOrderMatrices() {
   }
 }
 
+// Delete Order
+async function deleteOrder(orderId) {
+  try {
+    // Find the event by ID
+    const event = await Events.findByPk(orderId);
+
+    if (!event) {
+      return {
+        error: true,
+        status: 404,
+        payload: "Event not found",
+      };
+    }
+
+    // Find the customer associated with the event
+    const customer = await Customers.findByPk(event.customerId);
+
+    // Delete all items usage related to the event
+    await ItemsUsage.destroy({ where: { eventId: orderId } });
+
+    // Delete the event
+    await event.destroy();
+
+    // Check if the customer has any other events
+    const otherEvents = await Events.findOne({
+      where: { customerId: customer.id },
+    });
+
+    // If no other events are associated with the customer, delete the customer
+    if (!otherEvents) {
+      await customer.destroy();
+    }
+
+    return {
+      error: false,
+      status: 200,
+      payload: "Order successfully deleted",
+    };
+  } catch (e) {
+    console.error(e);
+
+    return {
+      error: true,
+      status: 500,
+      payload: "An error occurred while deleting the order",
+    };
+  }
+}
+
 module.exports = {
   createNewOrder,
   getAllOrders,
   getOrderById,
   getOrdersByState,
   getOrderMatrices,
+  deleteOrder,
 };

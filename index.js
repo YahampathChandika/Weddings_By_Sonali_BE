@@ -21,10 +21,10 @@ try {
   db.ItemsUsage.belongsTo(db.Items, { as: "items", foreignKey: "itemId", onDelete: "cascade" });
   db.Items.hasMany(db.ItemsUsage, { as: "itemsUsage", foreignKey: "itemId", onDelete: "cascade" });
 
-  db.Events.belongsTo(db.Customers, { as: "customer", foreignKey: "customerId" });
+  db.Events.belongsTo(db.Customers, { as: "customer", foreignKey: "customerId" , onDelete: "cascade"});
   db.Customers.hasMany(db.Events, { as: "events", foreignKey: "customerId", onDelete: "cascade" });
 
-  db.ItemsUsage.belongsTo(db.Events, { as: "events", foreignKey: "eventId" });
+  db.ItemsUsage.belongsTo(db.Events, { as: "events", foreignKey: "eventId" , onDelete: "cascade"});
   db.Events.hasMany(db.ItemsUsage, { as: "itemsUsage", foreignKey: "eventId", onDelete: "cascade" });
 
 } catch (error) {
