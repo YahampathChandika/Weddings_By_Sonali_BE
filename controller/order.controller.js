@@ -109,8 +109,6 @@ async function getOrderMatrices(req, res) {
   try {
     const result = await orderService.getOrderMatrices();
 
-    console.log("Order Mat", result);
-
     if (result.error) {
       return res.status(result.status).json({
         error: true,

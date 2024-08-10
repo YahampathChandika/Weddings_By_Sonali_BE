@@ -465,20 +465,58 @@ async function returnEventItems(eventId, items) {
 
       const missing = eventItem.quantity - returned - damaged;
 
-      eventItem.returned = returned;
-      eventItem.damaged = damaged;
-      eventItem.missing = missing;
+      // eventItem.returned = returned;
+      // eventItem.damaged = damaged;
+      // eventItem.missing = missing;
 
-      if (item.wash === "1") {
-        (eventItem.needsWash = true), (eventItem.isWashed = false);
-      } else {
+      // if (item.wash === "1") {
+      //   eventItem.needsWash = true;
+      //   eventItem.isWashed = false;
+      // } else {
+      //   item.availableunits += returned;
+      // }
+
+      console.log("eventItem.returned", eventItem.returned);
+      console.log("eventItem.damaged", eventItem.damaged);
+      console.log("item.wash", item.wash);
+
+      if (
+        eventItem.returned === null &&
+        eventItem.damaged === null &&
+        item.wash === "0"
+      ) {
+        console.log("wash is null");
+        eventItem.returned = returned;
+        eventItem.damaged = damaged;
+        eventItem.missing = missing;
+        item.damaged += damaged;
+        item.missing += missing;
+        item.quantity -= damaged + missing;
         item.availableunits += returned;
+        item.usedTimes++;
+      } else if (
+        eventItem.returned === null &&
+        eventItem.damaged === null &&
+        item.wash === "1"
+      ) {
+        console.log("wash is full");
+        eventItem.returned = returned;
+        eventItem.damaged = damaged;
+        eventItem.missing = missing;
+        eventItem.needsWash = true;
+        eventItem.isWashed = false;
+        item.damaged += damaged;
+        item.missing += missing;
+        item.quantity -= damaged + missing;
+        item.usedTimes++;
+      } else {
+        console.log("cntinue");
       }
 
-      item.damaged += damaged;
-      item.missing += missing;
-      item.quantity -= damaged + missing;
-      item.usedTimes++;
+      // item.damaged += damaged;
+      // item.missing += missing;
+      // item.quantity -= damaged + missing;
+      // item.usedTimes++;
       await eventItem.save();
       await item.save();
     }
